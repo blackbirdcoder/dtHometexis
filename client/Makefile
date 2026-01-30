@@ -3,11 +3,11 @@
 TARGET_EXEC := client
 CXX := clang++
 BUILD_DIR := ./build
-SRC_DIRS := ./src ./external/inih
-
+SRC_DIRS := ./src ./external/inih ./external/ixwebsocket
 LDLIBS := -lraylib -lm -ldl -lpthread -lX11
-
 CONFIG := settings.ini
+LDFLAGS += -pthread
+
 
 # Find all the C and C++ files we want to compile
 # Note the single quotes around the * expressions. The shell will incorrectly expand these otherwise, but we want to send the * directly to the find command.
