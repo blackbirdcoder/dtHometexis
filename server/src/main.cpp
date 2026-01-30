@@ -1,8 +1,8 @@
 #include <iostream>
-#include "../external/httplib/httplib.h"
 #include "../external/inih/INIReader.h"
 #include <string>
 #include "settings.h"
+#include <ixwebsocket/IXWebSocketServer.h>
 
 const std::string ServerDigitalTwin::CONFIG_FILE = "settings.ini";
 
@@ -16,20 +16,36 @@ int main() {
   }
 
   ServerDigitalTwin::URL url = {
-      reader.Get("server", "host", "localhost"),
+      reader.Get("server", "host", "0.0.0.0"),
       reader.GetInteger("server", "port", 5000),
       reader.Get("server", "data_path", "/data"),
   };
 
-  httplib::Server svr;
-  svr.Get(url.dataPath, [](const httplib::Request &, httplib::Response &res) {
-    res.set_content("Hello App!", "text/plain");
-  });
+  ix::WebSocketServer server(url.port, url.host);
+  server.setOnClientMessageCallback(
+      [](std::shared_ptr<ix::ConnectionState> connection,
+         ix::WebSocket &webSocket, const ix::WebSocketMessagePtr &msg) {
+        if (msg->type == ix::WebSocketMessageType::Open) {
+          webSocket.sendText("Hello client!");
+        } else if (msg->type == ix::WebSocketMessageType::Message) {
+          std::cout << "Received: " << msg->str << std::endl;
+          webSocket.sendText("Echo: " + msg->str);
+        } else if (msg->type == ix::WebSocketMessageType::Close) {
+          std::cout << "Client disconnected\n";
+        }
+      });
 
-  std::cout << "[->] Magical Server for a Digital Twin of Smart Home\n"
-            << "[->] Run: "
-            << "http://" << url.host << ":" << url.port << url.dataPath << '\n';
-  svr.listen(url.host, url.port);
+  auto res = server.listen();
+  if (!res.first) {
+    std::cerr << "[!] Error: " << res.second << '\n';
+    return 1;
+  }
+
+  server.start();
+  std::cout << "[*] WebSocket server start ws://" << url.host << ":" << url.port
+            << '\n';
+
+  std::this_thread::sleep_for(std::chrono::hours(24));
 
   return 0;
 }
