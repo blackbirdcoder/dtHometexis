@@ -1,9 +1,11 @@
 #include <iostream>
-#include "../external/inih/INIReader.h"
+#include <inih/INIReader.h>
 #include <string>
 #include "settings.h"
 #include <ixwebsocket/IXWebSocketServer.h>
+#include <nlohmann/json.hpp>
 
+using json = nlohmann::json;
 const std::string ServerDigitalTwin::CONFIG_FILE = "settings.ini";
 
 int main() {
@@ -18,20 +20,37 @@ int main() {
   ServerDigitalTwin::URL url = {
       reader.Get("server", "host", "0.0.0.0"),
       reader.GetInteger("server", "port", 5000),
-      reader.Get("server", "data_path", "/data"),
   };
 
   ix::WebSocketServer server(url.port, url.host);
   server.setOnClientMessageCallback(
-      [](std::shared_ptr<ix::ConnectionState> connection,
-         ix::WebSocket &webSocket, const ix::WebSocketMessagePtr &msg) {
+      [&url](std::shared_ptr<ix::ConnectionState> connection,
+             ix::WebSocket &webSocket, const ix::WebSocketMessagePtr &msg) {
         if (msg->type == ix::WebSocketMessageType::Open) {
-          webSocket.sendText("Hello client!");
+          std::cout << "[*] Connect Info" << '\n';
+          std::cout << "id: " << connection->getId() << std::endl;
+          std::cout << "Uri: " << msg->openInfo.uri << std::endl;
+          std::cout << "Headers:" << std::endl;
+          for (auto it : msg->openInfo.headers) {
+            std::cout << it.first << ": " << it.second << std::endl;
+          }
         } else if (msg->type == ix::WebSocketMessageType::Message) {
-          std::cout << "Received: " << msg->str << std::endl;
-          webSocket.sendText("Echo: " + msg->str);
+          json command = json::parse(msg->str);
+          if (command["command"] == "Hi") {
+            json j;
+            j["status"] = 1;
+            j["answer"] = "Hello";
+            webSocket.sendText(nlohmann::to_string(j));
+          } else if (command["command"] == "Bye") {
+            json j;
+            j["status"] = 2;
+            j["answer"] = "Goodbye";
+            webSocket.sendText(nlohmann::to_string(j));
+          }
+
         } else if (msg->type == ix::WebSocketMessageType::Close) {
-          std::cout << "Client disconnected\n";
+          std::cout << "[*] Connect id:" << connection->getId()
+                    << " disconnected" << '\n';
         }
       });
 

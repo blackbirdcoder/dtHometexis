@@ -1,33 +1,45 @@
 #include <iostream>
 #include <raylib.h>
 #include <string>
-#include "../external/inih/INIReader.h"
+#include <inih/INIReader.h>
 #include <ixwebsocket/IXWebSocket.h>
 #include <mutex>
+#include "settings.h"
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 int main() {
+  std::string response = "Work app";
   std::mutex mut;
-  INIReader reader("settings.ini");
+  INIReader reader(ClientDigitalTwin::CONFIG_FILE);
 
   if (reader.ParseError() < 0) {
-    std::cout << "Can't load 'settings.ini'\n";
+    std::cout << "[!] Error: Can't load"
+              << "'" << ClientDigitalTwin::CONFIG_FILE << "'" << '\n';
     return 1;
   }
 
-  std::string host = reader.Get("server", "host", "0.0.0.0");
-  unsigned port = reader.GetInteger("server", "port", 5000);
-  std::string path = reader.Get("server", "path", "/data");
+  ClientDigitalTwin::URL url = {
+      reader.Get("server", "host", "0.0.0.0"),
+      reader.GetInteger("server", "port", 5000),
+  };
 
   ix::WebSocket webSocket;
-  std::string url("ws://" + host + ":" + std::to_string(port));
-  webSocket.setUrl(url);
+  std::string schema = "ws://" + url.host + ":" + std::to_string(url.port);
+  webSocket.setUrl(schema);
   webSocket.setPingInterval(45);
 
-  std::string response;
   webSocket.setOnMessageCallback([&](const ix::WebSocketMessagePtr &msg) {
     if (msg->type == ix::WebSocketMessageType::Message) {
       mut.lock();
-      response = msg->str;
+      json j_complete = json::parse(msg->str);
+      if (j_complete["status"] == 1) {
+        response = j_complete["answer"];
+      }
+      if (j_complete["status"] == 2) {
+        response = j_complete["answer"];
+      }
       mut.unlock();
     }
   });
@@ -38,9 +50,20 @@ int main() {
   SetTargetFPS(60);
 
   while (!WindowShouldClose()) {
+    if (IsKeyPressed(KEY_H)) {
+      json j;
+      j["command"] = "Hi";
+      webSocket.sendText(nlohmann::to_string(j));
+    }
+    if (IsKeyPressed(KEY_B)) {
+      json j;
+      j["command"] = "Bye";
+      webSocket.sendText(nlohmann::to_string(j));
+    }
+
     BeginDrawing();
     ClearBackground(BLACK);
-    DrawText(response.c_str(), 20, 100, 27, YELLOW);
+    DrawText(response.c_str(), 20, 100, 27, (Color){112, 31, 126, 255});
     EndDrawing();
   }
 

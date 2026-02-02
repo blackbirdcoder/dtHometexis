@@ -1,12 +1,11 @@
 #pragma once
 #include <string>
 
-namespace ServerDigitalTwin {
+namespace ClientDigitalTwin {
 extern const std::string CONFIG_FILE;
 
 struct URL {
   std::string host;
   long port;
 };
-
-} // namespace ServerDigitalTwin
+} // namespace ClientDigitalTwin

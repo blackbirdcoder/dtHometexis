@@ -3,7 +3,7 @@
 TARGET_EXEC := server
 CXX := clang++
 BUILD_DIR := ./build
-SRC_DIRS := ./src ./external/inih ./external/ixwebsocket
+SRC_DIRS := ./src ./external/inih ./external/ixwebsocket ./external/nlohmann
 CONFIG := settings.ini
 LDFLAGS += -pthread
 
