@@ -3,16 +3,41 @@
 #include <string>
 #include <inih/INIReader.h>
 #include <ixwebsocket/IXWebSocket.h>
-#include <mutex>
-#include "settings.h"
-#include <nlohmann/json.hpp>
+#include "settings.hpp"
+#include "client.hpp"
+#include <vector>
+#define RAYGUI_IMPLEMENTATION
+#include <raygui/raygui.h>
 
-using json = nlohmann::json;
+// #include <nlohmann/json.hpp>
+// using json = nlohmann::json;
 
 int main() {
-  std::string response = "Work app";
-  std::mutex mut;
+  std::vector<ClientDigitalTwin::Sensor> sensors;
+
+  // std::string response = "Work app";
+  //  std::mutex mut;
   INIReader reader(ClientDigitalTwin::CONFIG_FILE);
+
+  //--- Camera
+  Camera3D camera = {0};
+  camera.position = (Vector3){10.0f, 10.0f, 10.0f};
+  camera.target = (Vector3){0.0f, 0.0f, 0.0f};
+  camera.up = (Vector3){0.0f, 1.0f, 0.0f};
+  camera.fovy = 45.0f;
+  camera.projection = CAMERA_PERSPECTIVE;
+  //---
+
+  //---
+  Vector3 cubePosition = {1.0f, 0.0f, 0.0f};
+  Vector3 cubeSize = {0.5f, 0.5f, 0.5f};
+  bool isOpenPanel = false;
+  //---
+
+  //---
+  Ray ray = {0};
+  RayCollision collision = {0};
+  //---
 
   if (reader.ParseError() < 0) {
     std::cout << "[!] Error: Can't load"
@@ -25,49 +50,78 @@ int main() {
       reader.GetInteger("server", "port", 5000),
   };
 
-  ix::WebSocket webSocket;
-  std::string schema = "ws://" + url.host + ":" + std::to_string(url.port);
-  webSocket.setUrl(schema);
-  webSocket.setPingInterval(45);
-
-  webSocket.setOnMessageCallback([&](const ix::WebSocketMessagePtr &msg) {
-    if (msg->type == ix::WebSocketMessageType::Message) {
-      mut.lock();
-      json j_complete = json::parse(msg->str);
-      if (j_complete["status"] == 1) {
-        response = j_complete["answer"];
-      }
-      if (j_complete["status"] == 2) {
-        response = j_complete["answer"];
-      }
-      mut.unlock();
-    }
-  });
-
-  webSocket.start();
+  ClientDigitalTwin::Client client(url, ClientDigitalTwin::PING_INTERVAL);
+  client.Handler(sensors);
+  client.Run();
 
   InitWindow(1024, 768, "Client Digital House");
   SetTargetFPS(60);
 
+  std::string t = ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR];
+  std::string m = "GetDataSensors";
+  std::vector<std::string> v = {"parA", "parB"};
+  ClientDigitalTwin::id_measure id = 2;
+  client.Send(m, v, t, id);
+
   while (!WindowShouldClose()) {
     if (IsKeyPressed(KEY_H)) {
-      json j;
-      j["command"] = "Hi";
-      webSocket.sendText(nlohmann::to_string(j));
+      std::string t = ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::HOME];
+      std::string m = "test";
+      std::vector<std::string> v = {"par1", "par2"};
+      ClientDigitalTwin::id_measure id = 1;
+      client.Send(m, v, t, id);
     }
     if (IsKeyPressed(KEY_B)) {
-      json j;
-      j["command"] = "Bye";
-      webSocket.sendText(nlohmann::to_string(j));
+      std::string t = ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR];
+      std::string m = "GetDataSensors";
+      std::vector<std::string> v = {"parA", "parB"};
+      ClientDigitalTwin::id_measure id = 2;
+      client.Send(m, v, t, id);
     }
 
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      ray = GetScreenToWorldRay(GetMousePosition(), camera);
+      if (!collision.hit) {
+        collision = GetRayCollisionBox(
+            ray, (BoundingBox){(Vector3){cubePosition.x - cubeSize.x / 2,
+                                         cubePosition.y - cubeSize.y / 2,
+                                         cubePosition.z - cubeSize.z / 2},
+                               (Vector3){cubePosition.x + cubeSize.x / 2,
+                                         cubePosition.y + cubeSize.y / 2,
+                                         cubePosition.z + cubeSize.z / 2}});
+        if (collision.hit == 1) {
+          isOpenPanel = !isOpenPanel;
+          collision.hit = false;
+        }
+      }
+    }
+
+    //--- Draw ---
     BeginDrawing();
     ClearBackground(BLACK);
-    DrawText(response.c_str(), 20, 100, 27, (Color){112, 31, 126, 255});
+    if (client.GetSensorReady()) {
+      DrawText(sensors.at(0).GetIndication().c_str(), 20, 100, 27, GREEN);
+    } else if (client.ErrorOccurred()) {
+      DrawText("Error!", (GetScreenWidth() / 2) - 40, GetScreenHeight() / 2, 44,
+               RED);
+    }
+    BeginMode3D(camera);
+    DrawCube(cubePosition, cubeSize.x, cubeSize.y, cubeSize.z, RED);
+    DrawCubeWires(cubePosition, cubeSize.x, cubeSize.y, cubeSize.z, MAROON);
+    DrawGrid(10, 1.0f);
+    EndMode3D();
+    if (client.GetSensorReady() && isOpenPanel) {
+      Vector2 screenPos = GetWorldToScreen(cubePosition, camera);
+      Rectangle panel = {screenPos.x + 20.0f, screenPos.y, 250.0f, 140.0f};
+      GuiPanel(panel, "Sensor Name");
+      GuiLabel((Rectangle){panel.x, panel.y + 20.0f, 200.0f, 20.0f},
+               sensors.at(0).GetIndication().c_str());
+    }
     EndDrawing();
+    //------------
   }
 
+  client.Close();
   CloseWindow();
-  webSocket.stop();
   return 0;
 }
