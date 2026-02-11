@@ -14,9 +14,8 @@
 
 int main() {
   std::vector<ClientDigitalTwin::Sensor> sensors;
+  bool showMessageBox = false;
 
-  // std::string response = "Work app";
-  //  std::mutex mut;
   INIReader reader(ClientDigitalTwin::CONFIG_FILE);
 
   //--- Camera
@@ -56,6 +55,7 @@ int main() {
 
   InitWindow(1024, 768, "Client Digital House");
   SetTargetFPS(60);
+  GuiLoadStyle("style/style_terminal.rgs");
 
   std::string t = ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR];
   std::string m = "GetDataSensors";
@@ -117,6 +117,18 @@ int main() {
       GuiLabel((Rectangle){panel.x, panel.y + 20.0f, 200.0f, 20.0f},
                sensors.at(0).GetIndication().c_str());
     }
+    if (GuiButton((Rectangle){24, 24, 120, 30}, "#191#Show Message"))
+      showMessageBox = true;
+
+    if (showMessageBox) {
+      int result =
+          GuiMessageBox((Rectangle){85, 70, 250, 100}, "#191#Message Box",
+                        "Hi! This is a message!", "Nice;Cool");
+
+      if (result >= 0)
+        showMessageBox = false;
+    }
+
     EndDrawing();
     //------------
   }
