@@ -1,7 +1,6 @@
 #include "sensor.hpp"
 #include <sstream>
 
-
 ClientDigitalTwin::Sensor::Sensor(std::string name, std::string type,
                                   std::string unit, double value) {
   this->name = name;
@@ -16,7 +15,7 @@ std::string ClientDigitalTwin::Sensor::GetIndication() const {
   if (unit != "bool") {
     str << type << ":" << value << unit;
   } else {
-    str << type << ":" << (value ? "true" : "false");
+    str << type << ":" << (value ? "on" : "off");
   }
 
   return str.str();

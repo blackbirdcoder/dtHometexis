@@ -14,8 +14,6 @@
 
 int main() {
   std::vector<ClientDigitalTwin::Sensor> sensors;
-  bool showMessageBox = false;
-
   INIReader reader(ClientDigitalTwin::CONFIG_FILE);
 
   //--- Camera
@@ -55,7 +53,7 @@ int main() {
 
   InitWindow(1024, 768, "Client Digital House");
   SetTargetFPS(60);
-  GuiLoadStyle("style/style_terminal.rgs");
+  GuiLoadStyle("assets/style/style_terminal.rgs");
 
   std::string t = ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR];
   std::string m = "GetDataSensors";
@@ -99,34 +97,21 @@ int main() {
     //--- Draw ---
     BeginDrawing();
     ClearBackground(BLACK);
-    if (client.GetSensorReady()) {
-      DrawText(sensors.at(0).GetIndication().c_str(), 20, 100, 27, GREEN);
-    } else if (client.ErrorOccurred()) {
-      DrawText("Error!", (GetScreenWidth() / 2) - 40, GetScreenHeight() / 2, 44,
-               RED);
-    }
+
+    // --- 3D Draw ---
     BeginMode3D(camera);
     DrawCube(cubePosition, cubeSize.x, cubeSize.y, cubeSize.z, RED);
     DrawCubeWires(cubePosition, cubeSize.x, cubeSize.y, cubeSize.z, MAROON);
     DrawGrid(10, 1.0f);
     EndMode3D();
+    //----------------
+
     if (client.GetSensorReady() && isOpenPanel) {
       Vector2 screenPos = GetWorldToScreen(cubePosition, camera);
       Rectangle panel = {screenPos.x + 20.0f, screenPos.y, 250.0f, 140.0f};
       GuiPanel(panel, "Sensor Name");
       GuiLabel((Rectangle){panel.x, panel.y + 20.0f, 200.0f, 20.0f},
                sensors.at(0).GetIndication().c_str());
-    }
-    if (GuiButton((Rectangle){24, 24, 120, 30}, "#191#Show Message"))
-      showMessageBox = true;
-
-    if (showMessageBox) {
-      int result =
-          GuiMessageBox((Rectangle){85, 70, 250, 100}, "#191#Message Box",
-                        "Hi! This is a message!", "Nice;Cool");
-
-      if (result >= 0)
-        showMessageBox = false;
     }
 
     EndDrawing();

@@ -95,7 +95,7 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
     sensor.push_back({
         {"name", "kitchen_temp_1"},
         {"type", "temperature"},
-        {"unit", "C"},
+        {"unit", "'C"},
         {"value", randomValue(-50.0, 50.0)},
     });
     sensor.push_back({

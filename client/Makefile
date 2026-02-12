@@ -7,7 +7,7 @@ SRC_DIRS := ./src ./external/inih ./external/ixwebsocket ./external/nlohmann ./e
 LDLIBS := -lraylib -lm -ldl -lpthread -lX11
 CONFIG := settings.ini
 LDFLAGS += -pthread
-STYLE_DIR := style
+ASSETS_DIR := assets
 
 
 # Find all the C and C++ files we want to compile
@@ -35,8 +35,8 @@ CPPFLAGS := $(INC_FLAGS) -MMD -MP
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CXX) $(OBJS) -o $@ $(LDFLAGS) $(LDLIBS)
 	cp $(CONFIG) $(BUILD_DIR)/
-	mkdir -p $(BUILD_DIR)/$(STYLE_DIR)
-	cp -r $(STYLE_DIR)/* $(BUILD_DIR)/$(STYLE_DIR)/
+	mkdir -p $(BUILD_DIR)/$(ASSETS_DIR)
+	cp -r $(ASSETS_DIR)/* $(BUILD_DIR)/$(ASSETS_DIR)/
 
 # Build step for C source
 $(BUILD_DIR)/%.c.o: %.c
