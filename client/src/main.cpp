@@ -9,11 +9,7 @@
 #define RAYGUI_IMPLEMENTATION
 #include <raygui/raygui.h>
 
-// #include <nlohmann/json.hpp>
-// using json = nlohmann::json;
-
 int main() {
-  std::vector<ClientDigitalTwin::Sensor> sensors;
   INIReader reader(ClientDigitalTwin::CONFIG_FILE);
 
   //--- Camera
@@ -23,17 +19,6 @@ int main() {
   camera.up = (Vector3){0.0f, 1.0f, 0.0f};
   camera.fovy = 45.0f;
   camera.projection = CAMERA_PERSPECTIVE;
-  //---
-
-  //---
-  Vector3 cubePosition = {1.0f, 0.0f, 0.0f};
-  Vector3 cubeSize = {0.5f, 0.5f, 0.5f};
-  bool isOpenPanel = false;
-  //---
-
-  //---
-  Ray ray = {0};
-  RayCollision collision = {0};
   //---
 
   if (reader.ParseError() < 0) {
@@ -47,13 +32,17 @@ int main() {
       reader.GetInteger("server", "port", 5000),
   };
 
+  std::vector<ClientDigitalTwin::Sensor> sensors;
   ClientDigitalTwin::Client client(url, ClientDigitalTwin::PING_INTERVAL);
   client.Handler(sensors);
   client.Run();
 
+  // --- Window App ---
   InitWindow(1024, 768, "Client Digital House");
   SetTargetFPS(60);
   GuiLoadStyle("assets/style/style_terminal.rgs");
+  GuiSetStyle(DEFAULT, TEXT_SIZE, ClientDigitalTwin::SIZE);
+  Model modelSensor = LoadModel("assets/models/sensor.glb");
 
   std::string t = ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR];
   std::string m = "GetDataSensors";
@@ -62,6 +51,25 @@ int main() {
   client.Send(m, v, t, id);
 
   while (!WindowShouldClose()) {
+    // --- Update ---
+    bool isBusyCursorUI = false;
+
+    if (client.IsSensorsReady()) {
+      for (auto &sensor : sensors) {
+        if (sensor.IsOpenWindow() &&
+            CheckCollisionPointRec(GetMousePosition(),
+                                   sensor.GetWindowRect())) {
+          isBusyCursorUI = true;
+          break;
+        }
+      }
+
+      for (auto &sensor : sensors) {
+        sensor.ClickHandler(camera, isBusyCursorUI);
+      }
+    }
+
+    // ==== temporary implementation!!!
     if (IsKeyPressed(KEY_H)) {
       std::string t = ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::HOME];
       std::string m = "test";
@@ -76,23 +84,8 @@ int main() {
       ClientDigitalTwin::id_measure id = 2;
       client.Send(m, v, t, id);
     }
-
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-      ray = GetScreenToWorldRay(GetMousePosition(), camera);
-      if (!collision.hit) {
-        collision = GetRayCollisionBox(
-            ray, (BoundingBox){(Vector3){cubePosition.x - cubeSize.x / 2,
-                                         cubePosition.y - cubeSize.y / 2,
-                                         cubePosition.z - cubeSize.z / 2},
-                               (Vector3){cubePosition.x + cubeSize.x / 2,
-                                         cubePosition.y + cubeSize.y / 2,
-                                         cubePosition.z + cubeSize.z / 2}});
-        if (collision.hit == 1) {
-          isOpenPanel = !isOpenPanel;
-          collision.hit = false;
-        }
-      }
-    }
+    //===========================
+    //----------------
 
     //--- Draw ---
     BeginDrawing();
@@ -100,25 +93,32 @@ int main() {
 
     // --- 3D Draw ---
     BeginMode3D(camera);
-    DrawCube(cubePosition, cubeSize.x, cubeSize.y, cubeSize.z, RED);
-    DrawCubeWires(cubePosition, cubeSize.x, cubeSize.y, cubeSize.z, MAROON);
-    DrawGrid(10, 1.0f);
+    if (client.IsSensorsReady()) {
+      for (auto &sensor : sensors) {
+        sensor.Draw(modelSensor);
+      }
+    }
+    DrawGrid(20, 1.0f);
     EndMode3D();
     //----------------
 
-    if (client.GetSensorReady() && isOpenPanel) {
-      Vector2 screenPos = GetWorldToScreen(cubePosition, camera);
-      Rectangle panel = {screenPos.x + 20.0f, screenPos.y, 250.0f, 140.0f};
-      GuiPanel(panel, "Sensor Name");
-      GuiLabel((Rectangle){panel.x, panel.y + 20.0f, 200.0f, 20.0f},
-               sensors.at(0).GetIndication().c_str());
+    //--- GUI ---
+    if (client.IsSensorsReady()) {
+      for (auto &sensor : sensors) {
+        if (sensor.IsOpenWindow()) {
+          sensor.ShowWindow(camera);
+        }
+      }
     }
+    //---------------
 
     EndDrawing();
-    //------------
+    //----------------
   }
-
+  UnloadModel(modelSensor);
   client.Close();
   CloseWindow();
+  //----------------
+
   return 0;
 }

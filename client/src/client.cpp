@@ -6,8 +6,8 @@ ClientDigitalTwin::Client::Client(const URL &url, const int ping) {
   std::string schema = "ws://" + url.host + ":" + std::to_string(url.port);
   webSocket.setUrl(schema);
   webSocket.setPingInterval(ping);
-  sensorsReady = false;
-  isError = false;
+  isReady = false;
+  isParseError = false;
 }
 
 void ClientDigitalTwin::Client::Handler(std::vector<Sensor> &sensors) {
@@ -27,6 +27,8 @@ void ClientDigitalTwin::Client::Handler(std::vector<Sensor> &sensors) {
             std::cout << "[***] IT IS SENSORS" << '\n';
             auto data = response["result"]["kitchen"]["sensors"];
             std::cout << "[***]DATA " << data << "\n";
+
+            float posX = -4.0f;
             for (int i = 0; i < data.size(); ++i) {
               std::cout << "[" << i << "]" << data[i]["name"] << "\n";
               std::cout << "[" << i << "]" << data[i]["type"] << "\n";
@@ -35,17 +37,19 @@ void ClientDigitalTwin::Client::Handler(std::vector<Sensor> &sensors) {
               Sensor sensor(data[i]["name"].get<std::string>(),
                             data[i]["type"].get<std::string>(),
                             data[i]["unit"].get<std::string>(),
-                            data[i]["value"].get<double>());
+                            data[i]["value"].get<double>(),
+                            (Vector3){posX, 0.0f, 0.0f});
               sensors.push_back(sensor);
+              posX += 1.2f;
             }
-            sensorsReady = true;
+            isReady = true;
             std::cout << "[***]SENSOR SIZE " << sensors.size() << "\n";
           }
         }
 
       } catch (...) {
         std::cerr << "[!] Client parser error" << '\n';
-        isError = true;
+        isParseError = true;
       }
       mut.unlock();
     }
@@ -69,5 +73,5 @@ void ClientDigitalTwin::Client::Send(const std::string &method,
   webSocket.sendText(nlohmann::to_string(request));
 }
 
-bool ClientDigitalTwin::Client::GetSensorReady() const { return sensorsReady; };
-bool ClientDigitalTwin::Client::ErrorOccurred() const { return isError; };
+bool ClientDigitalTwin::Client::IsSensorsReady() const { return isReady; };
+bool ClientDigitalTwin::Client::IsError() const { return isParseError; };
