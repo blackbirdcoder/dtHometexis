@@ -79,9 +79,14 @@ void ClientDigitalTwin::Sensor::ShowWindow(const Camera3D &camera) {
       windowRect = {-50.0f, -50.0f, 0.0f, 0.0f};
       this->openWindow = false;
     }
-    GuiLabel((Rectangle){this->windowRect.x, this->windowRect.y + 20.0f, 200.0f,
-                         20.0f},
-             this->GetIndication().c_str());
+    GuiLabel(
+        (Rectangle){
+            this->windowRect.x,
+            this->windowRect.y + 20.0f,
+            200.0f,
+            20.0f,
+        },
+        this->GetIndication().c_str());
   }
 }
 
@@ -112,8 +117,13 @@ void ClientDigitalTwin::Sensor::Draw(Model &model, float angle) {
               },
               WHITE);
   if (this->openWindow) {
-    DrawCubeWires({this->position.x, this->position.y + 0.5f, this->position.z},
-                  0.5f, 1.0f, 0.5f, GREEN);
+    DrawCubeWires(
+        {
+            this->position.x,
+            this->position.y + 0.5f,
+            this->position.z,
+        },
+        0.5f, 1.0f, 0.5f, GREEN);
   }
 }
 
@@ -129,4 +139,24 @@ bool ClientDigitalTwin::Sensor::IsOpenWindow() const {
 
 const Rectangle &ClientDigitalTwin::Sensor::GetWindowRect() const {
   return this->windowRect;
+}
+
+void ClientDigitalTwin::Sensor::DrawName(const Camera3D &camera) const {
+  Vector2 screenPos = GetWorldToScreen(
+      {
+          this->position.x - 1.0f,
+          this->position.y + 0.3f,
+          this->position.z,
+      },
+      camera);
+  if (!this->openWindow) {
+    GuiLabel(
+        (Rectangle){
+            screenPos.x,
+            screenPos.y,
+            120.0f,
+            5.0f,
+        },
+        this->name.c_str());
+  }
 }

@@ -16,6 +16,7 @@ public:
   bool IsOpenWindow() const;
   const Rectangle &GetWindowRect() const;
   void ClickHandler(const Camera &camera, bool isBusyCursor);
+  void DrawName(const Camera3D &camera) const;
 
 private:
   bool openWindow;

@@ -105,6 +105,10 @@ int main() {
     //--- GUI ---
     if (client.IsSensorsReady()) {
       for (auto &sensor : sensors) {
+        sensor.DrawName(camera);
+      }
+
+      for (auto &sensor : sensors) {
         if (sensor.IsOpenWindow()) {
           sensor.ShowWindow(camera);
         }
