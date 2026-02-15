@@ -111,6 +111,10 @@ void ClientDigitalTwin::Sensor::Draw(Model &model, float angle) {
                   1.0f,
               },
               WHITE);
+  if (this->openWindow) {
+    DrawCubeWires({this->position.x, this->position.y + 0.5f, this->position.z},
+                  0.5f, 1.0f, 0.5f, GREEN);
+  }
 }
 
 Vector3 ClientDigitalTwin::Sensor::GetPosition() { return this->position; }
