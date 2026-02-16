@@ -7,10 +7,10 @@ namespace ClientDigitalTwin {
 class Sensor {
 public:
   Sensor(std::string name, std::string type, std::string unit, double value,
-         Vector3 position);
+         Vector3 position, float angle);
   std::string GetIndication() const; // Edit method
   void ShowWindow(const Camera3D &camera);
-  void Draw(Model &model, float angle = 0.0f);
+  void Draw(Model &model);
   Vector3 GetPosition();
   void SwitchOpenWindow();
   bool IsOpenWindow() const;
@@ -32,5 +32,6 @@ private:
   Vector3 collisionPosition;
   Ray ray;
   RayCollision rayCollision;
+  float angle;
 };
 } // namespace ClientDigitalTwin

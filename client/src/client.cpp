@@ -38,7 +38,11 @@ void ClientDigitalTwin::Client::Handler(std::vector<Sensor> &sensors) {
                             data[i]["type"].get<std::string>(),
                             data[i]["unit"].get<std::string>(),
                             data[i]["value"].get<double>(),
-                            (Vector3){posX, 0.0f, 0.0f});
+                            (Vector3){
+                                data[i]["position"]["x"].get<float>(),
+                                data[i]["position"]["y"].get<float>(),
+                                data[i]["position"]["z"].get<float>(),
+                            }, data[i]["angle"].get<float>());
               sensors.push_back(sensor);
               posX += 1.2f;
             }

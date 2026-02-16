@@ -4,7 +4,7 @@
 
 ClientDigitalTwin::Sensor::Sensor(std::string name, std::string type,
                                   std::string unit, double value,
-                                  Vector3 position) {
+                                  Vector3 position, float angle) {
   this->name = name;
   this->type = type;
   this->unit = unit;
@@ -17,6 +17,7 @@ ClientDigitalTwin::Sensor::Sensor(std::string name, std::string type,
   this->collisionRadius = 0.4f;
   this->ray = {0.0f};
   this->rayCollision = {0};
+  this->angle = angle;
 }
 
 void ClientDigitalTwin::Sensor::ClickHandler(const Camera &camera,
@@ -102,14 +103,14 @@ std::string ClientDigitalTwin::Sensor::GetIndication() const {
   return str.str();
 }
 
-void ClientDigitalTwin::Sensor::Draw(Model &model, float angle) {
+void ClientDigitalTwin::Sensor::Draw(Model &model) {
   DrawModelEx(model, this->position,
               (Vector3){
                   0.0f,
                   1.0f,
                   0.0f,
               },
-              angle,
+              this->angle,
               (Vector3){
                   1.0f,
                   1.0f,
