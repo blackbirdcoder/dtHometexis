@@ -7,6 +7,7 @@ public:
   Camera();
   const Camera3D &Get() const;
   void Handler();
+  const float GetDistance() const;
 
 private:
   struct Zoom {
@@ -17,5 +18,6 @@ private:
   Camera3D camera;
   float sensitivity;
   float speed;
+  float currentDistance;
 };
 } // namespace ClientDigitalTwin

@@ -16,7 +16,7 @@ public:
   bool IsOpenWindow() const;
   const Rectangle &GetWindowRect() const;
   void ClickHandler(const Camera &camera, bool isBusyCursor);
-  void DrawName(const Camera3D &camera) const;
+  void DrawName(const Camera3D &camera, const float distance) const;
 
 private:
   bool openWindow;
@@ -33,5 +33,10 @@ private:
   Ray ray;
   RayCollision rayCollision;
   float angle;
+  float distanceLimit;
+  struct WindowSize {
+    float width;
+    float hight;
+  } windowSize;
 };
 } // namespace ClientDigitalTwin

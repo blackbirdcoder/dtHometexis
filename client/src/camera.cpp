@@ -1,5 +1,6 @@
 #include "camera.hpp"
 #include <raymath.h>
+#include <iostream>
 
 ClientDigitalTwin::Camera::Camera() {
   Camera3D camera = {0};
@@ -12,6 +13,7 @@ ClientDigitalTwin::Camera::Camera() {
   this->zoom = {0.0f, 22.0f, 12.0f};
   this->sensitivity = 1.0f;
   this->speed = 2.0f;
+  this->currentDistance = 0.0f;
 }
 
 const Camera3D &ClientDigitalTwin::Camera::Get() const { return this->camera; }
@@ -39,6 +41,7 @@ void ClientDigitalTwin::Camera::Handler() {
   }
 
   if (IsKeyPressed(KEY_ONE)) {
+    this->currentDistance = 0.0f;
     this->camera.position = (Vector3){10.0f, 10.0f, 10.0f};
     this->camera.target = (Vector3){0.0f, 0.0f, 0.0f};
   }
@@ -66,9 +69,15 @@ void ClientDigitalTwin::Camera::Handler() {
     dist = Clamp(dist, this->zoom.min, this->zoom.max);
     diff = Vector3Normalize(diff);
 
+    std::cout << "(**) DIST: " << dist << '\n';
+    this->currentDistance = dist;
     this->camera.position =
         Vector3Add(this->camera.target, Vector3Scale(diff, dist));
   }
 
   UpdateCameraPro(&this->camera, move, rot, this->zoom.base);
+}
+
+const float ClientDigitalTwin::Camera::GetDistance() const {
+  return this->currentDistance;
 }

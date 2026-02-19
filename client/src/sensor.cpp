@@ -18,6 +18,8 @@ ClientDigitalTwin::Sensor::Sensor(std::string name, std::string type,
   this->ray = {0.0f};
   this->rayCollision = {0};
   this->angle = angle;
+  this->distanceLimit = 21.0f;
+  this->windowSize = {250.0f, 140.0f};
 }
 
 void ClientDigitalTwin::Sensor::ClickHandler(const Camera &camera,
@@ -48,8 +50,8 @@ void ClientDigitalTwin::Sensor::ShowWindow(const Camera3D &camera) {
       this->windowRect = {
           screenPos.x + 20.0f,
           screenPos.y,
-          250.0f,
-          140.0f,
+          this->windowSize.width,
+          this->windowSize.hight,
       };
     }
 
@@ -142,22 +144,27 @@ const Rectangle &ClientDigitalTwin::Sensor::GetWindowRect() const {
   return this->windowRect;
 }
 
-void ClientDigitalTwin::Sensor::DrawName(const Camera3D &camera) const {
-  Vector2 screenPos = GetWorldToScreen(
-      {
-          this->position.x - 1.0f,
-          this->position.y + 0.3f,
-          this->position.z,
-      },
-      camera);
-  if (!this->openWindow) {
-    GuiLabel(
-        (Rectangle){
-            screenPos.x,
-            screenPos.y,
-            120.0f,
-            5.0f,
+void ClientDigitalTwin::Sensor::DrawName(const Camera3D &camera,
+                                         const float distance) const {
+  if (distance < this->distanceLimit) {
+    Vector2 screenPos = GetWorldToScreen(
+        {
+            this->position.x,
+            this->position.y,
+            this->position.z,
         },
-        this->name.c_str());
+        camera);
+    if (!this->openWindow) {
+      screenPos.x -= 30.0f;
+      screenPos.y -= 30.0f;
+      GuiLabel(
+          (Rectangle){
+              screenPos.x,
+              screenPos.y,
+              120.0f,
+              5.0f,
+          },
+          this->name.c_str());
+    }
   }
 }
