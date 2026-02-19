@@ -69,7 +69,6 @@ void ClientDigitalTwin::Camera::Handler() {
     dist = Clamp(dist, this->zoom.min, this->zoom.max);
     diff = Vector3Normalize(diff);
 
-    std::cout << "(**) DIST: " << dist << '\n';
     this->currentDistance = dist;
     this->camera.position =
         Vector3Add(this->camera.target, Vector3Scale(diff, dist));
