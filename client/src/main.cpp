@@ -8,18 +8,10 @@
 #include <vector>
 #define RAYGUI_IMPLEMENTATION
 #include <raygui/raygui.h>
+#include "camera.hpp"
 
 int main() {
   INIReader reader(ClientDigitalTwin::CONFIG_FILE);
-
-  //--- Camera
-  Camera3D camera = {0};
-  camera.position = (Vector3){10.0f, 10.0f, 10.0f};
-  camera.target = (Vector3){0.0f, 0.0f, 0.0f};
-  camera.up = (Vector3){0.0f, 1.0f, 0.0f};
-  camera.fovy = 45.0f;
-  camera.projection = CAMERA_PERSPECTIVE;
-  //---
 
   if (reader.ParseError() < 0) {
     std::cout << "[!] Error: Can't load"
@@ -40,6 +32,7 @@ int main() {
   // --- Window App ---
   InitWindow(1024, 768, "Client Digital House");
   SetTargetFPS(60);
+  ClientDigitalTwin::Camera camera3d;
   GuiLoadStyle("assets/style/style_terminal.rgs");
   GuiSetStyle(DEFAULT, TEXT_SIZE, ClientDigitalTwin::SIZE);
   Model modelSensor = LoadModel("assets/models/sensor.glb");
@@ -52,6 +45,7 @@ int main() {
 
   while (!WindowShouldClose()) {
     // --- Update ---
+    camera3d.Handler();
     bool isBusyCursorUI = false;
 
     if (client.IsSensorsReady()) {
@@ -65,7 +59,7 @@ int main() {
       }
 
       for (auto &sensor : sensors) {
-        sensor.ClickHandler(camera, isBusyCursorUI);
+        sensor.ClickHandler(camera3d.Get(), isBusyCursorUI);
       }
     }
 
@@ -90,9 +84,8 @@ int main() {
     //--- Draw ---
     BeginDrawing();
     ClearBackground(BLACK);
-
     // --- 3D Draw ---
-    BeginMode3D(camera);
+    BeginMode3D(camera3d.Get());
     if (client.IsSensorsReady()) {
       for (auto &sensor : sensors) {
         sensor.Draw(modelSensor);
@@ -105,12 +98,12 @@ int main() {
     //--- GUI ---
     if (client.IsSensorsReady()) {
       for (auto &sensor : sensors) {
-        sensor.DrawName(camera);
+        sensor.DrawName(camera3d.Get());
       }
 
       for (auto &sensor : sensors) {
         if (sensor.IsOpenWindow()) {
-          sensor.ShowWindow(camera);
+          sensor.ShowWindow(camera3d.Get());
         }
       }
     }
