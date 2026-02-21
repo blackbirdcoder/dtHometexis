@@ -30,7 +30,7 @@ int main() {
   client.Run();
 
   // --- Window App ---
-  InitWindow(1024, 768, "Client Digital House");
+  InitWindow(1024, 768, "Digital Twin Hometexis");
   SetTargetFPS(60);
   ClientDigitalTwin::Camera camera3d;
   GuiLoadStyle("assets/style/style_terminal.rgs");

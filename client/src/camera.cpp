@@ -1,6 +1,5 @@
 #include "camera.hpp"
 #include <raymath.h>
-#include <iostream>
 
 ClientDigitalTwin::Camera::Camera() {
   Camera3D camera = {0};
