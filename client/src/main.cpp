@@ -9,6 +9,7 @@
 #define RAYGUI_IMPLEMENTATION
 #include <raygui/raygui.h>
 #include "camera.hpp"
+#include <memory>
 
 int main() {
   INIReader reader(ClientDigitalTwin::CONFIG_FILE);
@@ -24,7 +25,7 @@ int main() {
       reader.GetInteger("server", "port", 5000),
   };
 
-  std::vector<ClientDigitalTwin::Sensor> sensors;
+  std::vector<std::unique_ptr<ClientDigitalTwin::Sensor>> sensors;
   ClientDigitalTwin::Client client(url, ClientDigitalTwin::PING_INTERVAL);
   client.Handler(sensors);
   client.Run();
@@ -50,16 +51,16 @@ int main() {
 
     if (client.IsSensorsReady()) {
       for (auto &sensor : sensors) {
-        if (sensor.IsOpenWindow() &&
+        if (sensor->IsOpenWindow() &&
             CheckCollisionPointRec(GetMousePosition(),
-                                   sensor.GetWindowRect())) {
+                                   sensor->GetWindowRect())) {
           isBusyCursorUI = true;
           break;
         }
       }
 
       for (auto &sensor : sensors) {
-        sensor.ClickHandler(camera3d.Get(), isBusyCursorUI);
+        sensor->ClickHandler(camera3d.Get(), isBusyCursorUI);
       }
     }
 
@@ -88,7 +89,7 @@ int main() {
     BeginMode3D(camera3d.Get());
     if (client.IsSensorsReady()) {
       for (auto &sensor : sensors) {
-        sensor.Draw(modelSensor);
+        sensor->Draw(modelSensor);
       }
     }
     DrawGrid(20, 1.0f);
@@ -98,12 +99,12 @@ int main() {
     //--- GUI ---
     if (client.IsSensorsReady()) {
       for (auto &sensor : sensors) {
-        sensor.DrawName(camera3d.Get(), camera3d.GetDistance());
+        sensor->DrawName(camera3d.Get(), camera3d.GetDistance());
       }
 
       for (auto &sensor : sensors) {
-        if (sensor.IsOpenWindow()) {
-          sensor.ShowWindow(camera3d.Get());
+        if (sensor->IsOpenWindow()) {
+          sensor->ShowWindow(camera3d.Get());
         }
       }
     }

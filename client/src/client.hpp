@@ -2,14 +2,14 @@
 #include <ixwebsocket/IXWebSocket.h>
 #include <mutex>
 #include "settings.hpp"
-#include "sensor.hpp"
+#include "sensors/sensor.hpp"
 #include <vector>
 
 namespace ClientDigitalTwin {
 class Client {
 public:
   Client(const URL &url, const int ping);
-  void Handler(std::vector<Sensor> &sensors);
+  void Handler(std::vector<std::unique_ptr<ClientDigitalTwin::Sensor>> &sensors);
   void Run();
   void Close();
   void Send(const std::string &method, const std::vector<std::string> &params,

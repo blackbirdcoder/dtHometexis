@@ -1,6 +1,13 @@
 #include "client.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
+#include <memory>
+#include "sensors/temperature.hpp"
+#include "sensors/humidity.hpp"
+#include "sensors/gas.hpp"
+#include "sensors/smoke.hpp"
+#include "sensors/light.hpp"
+#include "sensors/motion.hpp"
 
 ClientDigitalTwin::Client::Client(const URL &url, const int ping) {
   std::string schema = "ws://" + url.host + ":" + std::to_string(url.port);
@@ -10,7 +17,8 @@ ClientDigitalTwin::Client::Client(const URL &url, const int ping) {
   isParseError = false;
 }
 
-void ClientDigitalTwin::Client::Handler(std::vector<Sensor> &sensors) {
+void ClientDigitalTwin::Client::Handler(
+    std::vector<std::unique_ptr<ClientDigitalTwin::Sensor>> &sensors) {
   webSocket.setOnMessageCallback([&](const ix::WebSocketMessagePtr &msg) {
     if (msg->type == ix::WebSocketMessageType::Message) {
       mut.lock();
@@ -28,23 +36,95 @@ void ClientDigitalTwin::Client::Handler(std::vector<Sensor> &sensors) {
             auto data = response["result"]["kitchen"]["sensors"];
             std::cout << "[***]DATA " << data << "\n";
 
-            float posX = -4.0f;
             for (int i = 0; i < data.size(); ++i) {
               std::cout << "[" << i << "]" << data[i]["name"] << "\n";
               std::cout << "[" << i << "]" << data[i]["type"] << "\n";
               std::cout << "[" << i << "]" << data[i]["unit"] << "\n";
               std::cout << "[" << i << "]" << data[i]["value"] << "\n";
-              Sensor sensor(data[i]["name"].get<std::string>(),
-                            data[i]["type"].get<std::string>(),
-                            data[i]["unit"].get<std::string>(),
-                            data[i]["value"].get<double>(),
-                            (Vector3){
-                                data[i]["position"]["x"].get<float>(),
-                                data[i]["position"]["y"].get<float>(),
-                                data[i]["position"]["z"].get<float>(),
-                            }, data[i]["angle"].get<float>());
-              sensors.push_back(sensor);
-              posX += 1.2f;
+
+              std::unique_ptr<Sensor> sensor;
+
+              if (data[i]["type"].get<std::string>() == "temperature") {
+                sensor = std::make_unique<Temperature>(
+                    data[i]["name"].get<std::string>(),
+                    data[i]["type"].get<std::string>(),
+                    data[i]["unit"].get<std::string>(),
+                    data[i]["value"].get<double>(),
+                    (Vector3){data[i]["position"]["x"].get<float>(),
+                              data[i]["position"]["y"].get<float>(),
+                              data[i]["position"]["z"].get<float>()},
+                    data[i]["angle"].get<float>());
+
+              } else if (data[i]["type"].get<std::string>() == "humidity") {
+                sensor = std::make_unique<Humidity>(
+                    data[i]["name"].get<std::string>(),
+                    data[i]["type"].get<std::string>(),
+                    data[i]["unit"].get<std::string>(),
+                    data[i]["value"].get<double>(),
+                    (Vector3){data[i]["position"]["x"].get<float>(),
+                              data[i]["position"]["y"].get<float>(),
+                              data[i]["position"]["z"].get<float>()},
+                    data[i]["angle"].get<float>());
+
+              } else if (data[i]["type"].get<std::string>() == "gas") {
+                sensor = std::make_unique<Gas>(
+                    data[i]["name"].get<std::string>(),
+                    data[i]["type"].get<std::string>(),
+                    data[i]["unit"].get<std::string>(),
+                    data[i]["value"].get<double>(),
+                    (Vector3){data[i]["position"]["x"].get<float>(),
+                              data[i]["position"]["y"].get<float>(),
+                              data[i]["position"]["z"].get<float>()},
+                    data[i]["angle"].get<float>());
+
+              } else if (data[i]["type"].get<std::string>() == "smoke") {
+                sensor = std::make_unique<Smoke>(
+                    data[i]["name"].get<std::string>(),
+                    data[i]["type"].get<std::string>(),
+                    data[i]["unit"].get<std::string>(),
+                    data[i]["value"].get<double>(),
+                    (Vector3){data[i]["position"]["x"].get<float>(),
+                              data[i]["position"]["y"].get<float>(),
+                              data[i]["position"]["z"].get<float>()},
+                    data[i]["angle"].get<float>());
+
+              } else if (data[i]["type"].get<std::string>() == "light") {
+                sensor = std::make_unique<Light>(
+                    data[i]["name"].get<std::string>(),
+                    data[i]["type"].get<std::string>(),
+                    data[i]["unit"].get<std::string>(),
+                    data[i]["value"].get<double>(),
+                    (Vector3){data[i]["position"]["x"].get<float>(),
+                              data[i]["position"]["y"].get<float>(),
+                              data[i]["position"]["z"].get<float>()},
+                    data[i]["angle"].get<float>());
+
+              } else if (data[i]["type"].get<std::string>() == "motion") {
+                sensor = std::make_unique<Motion>(
+                    data[i]["name"].get<std::string>(),
+                    data[i]["type"].get<std::string>(),
+                    data[i]["unit"].get<std::string>(),
+                    data[i]["value"].get<double>(),
+                    (Vector3){data[i]["position"]["x"].get<float>(),
+                              data[i]["position"]["y"].get<float>(),
+                              data[i]["position"]["z"].get<float>()},
+                    data[i]["angle"].get<float>());
+              }
+
+              // Sensor sensor(data[i]["name"].get<std::string>(),
+              //               data[i]["type"].get<std::string>(),
+              //               data[i]["unit"].get<std::string>(),
+              //               data[i]["value"].get<double>(),
+              //               (Vector3){
+              //                   data[i]["position"]["x"].get<float>(),
+              //                   data[i]["position"]["y"].get<float>(),
+              //                   data[i]["position"]["z"].get<float>(),
+              //               }, data[i]["angle"].get<float>());
+              // sensors.push_back(sensor);
+
+              if (sensor) {
+                sensors.push_back(std::move(sensor));
+              }
             }
             isReady = true;
             std::cout << "[***]SENSOR SIZE " << sensors.size() << "\n";
