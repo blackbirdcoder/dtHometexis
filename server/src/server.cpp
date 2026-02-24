@@ -153,6 +153,26 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                                        {"z", 3.0},
                                    })},
                       {"angle", 180.0}});
+    sensor.push_back({{"name", "kitchen_door_1"},
+                      {"type", "door"},
+                      {"unit", "bool"},
+                      {"value", 0.0},
+                      {"position", nlohmann::json({
+                                       {"x", 5.0},
+                                       {"y", posY},
+                                       {"z", 3.0},
+                                   })},
+                      {"angle", 180.0}});
+    sensor.push_back({{"name", "kitchen_window_1"},
+                      {"type", "window"},
+                      {"unit", "bool"},
+                      {"value", 1.0},
+                      {"position", nlohmann::json({
+                                       {"x", 5.0},
+                                       {"y", posY},
+                                       {"z", 1.0},
+                                   })},
+                      {"angle", 0.0}});
   }
   return sensor;
 }
