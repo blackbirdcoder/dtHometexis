@@ -20,136 +20,155 @@ ClientDigitalTwin::Client::Client(const URL &url, const int ping) {
 }
 
 void ClientDigitalTwin::Client::Handler(
-    std::vector<std::unique_ptr<ClientDigitalTwin::Sensor>> &sensors) {
-  webSocket.setOnMessageCallback([&](const ix::WebSocketMessagePtr &msg) {
-    if (msg->type == ix::WebSocketMessageType::Message) {
-      mut.lock();
-      try {
-        nlohmann::json response = nlohmann::json::parse(msg->str);
-        // TODO: Continue. Implement logic handler
-        // {"id":1,"jsonrpc":"2.0","result":"Hello Client"}
-        std::cout << "[**] ANSWER: " << msg->str << '\n';
-        if (response["tag"] == TAGS[Tag::HOME]) {
-          std::cout << "[***] IT IS HOME" << '\n';
+    std::vector<std::unique_ptr<ClientDigitalTwin::Sensor>> &sensors,
+    Mode mode) {
+  webSocket.setOnMessageCallback(
+      [&sensors, mode, this](const ix::WebSocketMessagePtr &msg) {
+        if (msg->type == ix::WebSocketMessageType::Message) {
+          this->mut.lock();
+          try {
+            nlohmann::json response = nlohmann::json::parse(msg->str);
+            // TODO: Continue. Implement logic handler
+            // {"id":1,"jsonrpc":"2.0","result":"Hello Client"}
+            std::cout << "[**] ANSWER: " << msg->str << '\n';
+            if (response["tag"] == TAGS[Tag::HOME]) {
+              std::cout << "[***] IT IS HOME" << '\n';
 
-        } else if (response["tag"] == TAGS[Tag::SENSOR]) {
-          if (response["id"] != nlohmann::detail::value_t::null) {
-            std::cout << "[***] IT IS SENSORS" << '\n';
-            auto data = response["result"]["kitchen"]["sensors"];
-            std::cout << "[***]DATA " << data << "\n";
+            } else if (response["tag"] == TAGS[Tag::SENSOR]) {
+              if (response["id"] != nlohmann::detail::value_t::null) {
+                std::cout << "[***] IT IS SENSORS" << '\n';
+                auto data = response["result"]["kitchen"]["sensors"];
+                std::cout << "[***]DATA " << data << "\n";
 
-            for (int i = 0; i < data.size(); ++i) {
-              std::cout << "[" << i << "]" << data[i]["name"] << "\n";
-              std::cout << "[" << i << "]" << data[i]["type"] << "\n";
-              std::cout << "[" << i << "]" << data[i]["unit"] << "\n";
-              std::cout << "[" << i << "]" << data[i]["value"] << "\n";
+                for (int i = 0; i < data.size(); ++i) {
+                  std::cout << "[" << i << "]" << data[i]["name"] << "\n";
+                  std::cout << "[" << i << "]" << data[i]["type"] << "\n";
+                  std::cout << "[" << i << "]" << data[i]["unit"] << "\n";
+                  std::cout << "[" << i << "]" << data[i]["value"] << "\n";
 
-              std::unique_ptr<Sensor> sensor;
+                  std::unique_ptr<Sensor> sensor;
 
-              if (data[i]["type"].get<std::string>() == "temperature") {
-                sensor = std::make_unique<Temperature>(
-                    data[i]["name"].get<std::string>(),
-                    data[i]["type"].get<std::string>(),
-                    data[i]["unit"].get<std::string>(),
-                    data[i]["value"].get<double>(),
-                    (Vector3){data[i]["position"]["x"].get<float>(),
-                              data[i]["position"]["y"].get<float>(),
-                              data[i]["position"]["z"].get<float>()},
-                    data[i]["angle"].get<float>());
+                  if (data[i]["type"].get<std::string>() == "temperature") {
+                    sensor = std::make_unique<Temperature>(
+                        data[i]["name"].get<std::string>(),
+                        data[i]["type"].get<std::string>(),
+                        data[i]["unit"].get<std::string>(),
+                        data[i]["value"].get<float>(),
+                        (Vector3){data[i]["position"]["x"].get<float>(),
+                                  data[i]["position"]["y"].get<float>(),
+                                  data[i]["position"]["z"].get<float>()},
+                        data[i]["angle"].get<float>(),
+                        data[i]["options"].get<std::map<std::string, float>>(),
+                        mode);
 
-              } else if (data[i]["type"].get<std::string>() == "humidity") {
-                sensor = std::make_unique<Humidity>(
-                    data[i]["name"].get<std::string>(),
-                    data[i]["type"].get<std::string>(),
-                    data[i]["unit"].get<std::string>(),
-                    data[i]["value"].get<double>(),
-                    (Vector3){data[i]["position"]["x"].get<float>(),
-                              data[i]["position"]["y"].get<float>(),
-                              data[i]["position"]["z"].get<float>()},
-                    data[i]["angle"].get<float>());
+                  } else if (data[i]["type"].get<std::string>() == "humidity") {
+                    sensor = std::make_unique<Humidity>(
+                        data[i]["name"].get<std::string>(),
+                        data[i]["type"].get<std::string>(),
+                        data[i]["unit"].get<std::string>(),
+                        data[i]["value"].get<float>(),
+                        (Vector3){data[i]["position"]["x"].get<float>(),
+                                  data[i]["position"]["y"].get<float>(),
+                                  data[i]["position"]["z"].get<float>()},
+                        data[i]["angle"].get<float>(),
+                        data[i]["options"].get<std::map<std::string, float>>(),
+                        mode);
 
-              } else if (data[i]["type"].get<std::string>() == "gas") {
-                sensor = std::make_unique<Gas>(
-                    data[i]["name"].get<std::string>(),
-                    data[i]["type"].get<std::string>(),
-                    data[i]["unit"].get<std::string>(),
-                    data[i]["value"].get<double>(),
-                    (Vector3){data[i]["position"]["x"].get<float>(),
-                              data[i]["position"]["y"].get<float>(),
-                              data[i]["position"]["z"].get<float>()},
-                    data[i]["angle"].get<float>());
+                  } else if (data[i]["type"].get<std::string>() == "gas") {
+                    sensor = std::make_unique<Gas>(
+                        data[i]["name"].get<std::string>(),
+                        data[i]["type"].get<std::string>(),
+                        data[i]["unit"].get<std::string>(),
+                        data[i]["value"].get<float>(),
+                        (Vector3){data[i]["position"]["x"].get<float>(),
+                                  data[i]["position"]["y"].get<float>(),
+                                  data[i]["position"]["z"].get<float>()},
+                        data[i]["angle"].get<float>(),
+                        data[i]["options"].get<std::map<std::string, float>>(),
+                        mode);
 
-              } else if (data[i]["type"].get<std::string>() == "smoke") {
-                sensor = std::make_unique<Smoke>(
-                    data[i]["name"].get<std::string>(),
-                    data[i]["type"].get<std::string>(),
-                    data[i]["unit"].get<std::string>(),
-                    data[i]["value"].get<double>(),
-                    (Vector3){data[i]["position"]["x"].get<float>(),
-                              data[i]["position"]["y"].get<float>(),
-                              data[i]["position"]["z"].get<float>()},
-                    data[i]["angle"].get<float>());
+                  } else if (data[i]["type"].get<std::string>() == "smoke") {
+                    sensor = std::make_unique<Smoke>(
+                        data[i]["name"].get<std::string>(),
+                        data[i]["type"].get<std::string>(),
+                        data[i]["unit"].get<std::string>(),
+                        data[i]["value"].get<float>(),
+                        (Vector3){data[i]["position"]["x"].get<float>(),
+                                  data[i]["position"]["y"].get<float>(),
+                                  data[i]["position"]["z"].get<float>()},
+                        data[i]["angle"].get<float>(),
+                        data[i]["options"].get<std::map<std::string, float>>(),
+                        mode);
 
-              } else if (data[i]["type"].get<std::string>() == "light") {
-                sensor = std::make_unique<Light>(
-                    data[i]["name"].get<std::string>(),
-                    data[i]["type"].get<std::string>(),
-                    data[i]["unit"].get<std::string>(),
-                    data[i]["value"].get<double>(),
-                    (Vector3){data[i]["position"]["x"].get<float>(),
-                              data[i]["position"]["y"].get<float>(),
-                              data[i]["position"]["z"].get<float>()},
-                    data[i]["angle"].get<float>());
+                  } else if (data[i]["type"].get<std::string>() == "light") {
+                    sensor = std::make_unique<Light>(
+                        data[i]["name"].get<std::string>(),
+                        data[i]["type"].get<std::string>(),
+                        data[i]["unit"].get<std::string>(),
+                        data[i]["value"].get<float>(),
+                        (Vector3){data[i]["position"]["x"].get<float>(),
+                                  data[i]["position"]["y"].get<float>(),
+                                  data[i]["position"]["z"].get<float>()},
+                        data[i]["angle"].get<float>(),
+                        data[i]["options"].get<std::map<std::string, float>>(),
+                        mode);
 
-              } else if (data[i]["type"].get<std::string>() == "motion") {
-                sensor = std::make_unique<Motion>(
-                    data[i]["name"].get<std::string>(),
-                    data[i]["type"].get<std::string>(),
-                    data[i]["unit"].get<std::string>(),
-                    data[i]["value"].get<double>(),
-                    (Vector3){data[i]["position"]["x"].get<float>(),
-                              data[i]["position"]["y"].get<float>(),
-                              data[i]["position"]["z"].get<float>()},
-                    data[i]["angle"].get<float>());
+                  } else if (data[i]["type"].get<std::string>() == "motion") {
+                    sensor = std::make_unique<Motion>(
+                        data[i]["name"].get<std::string>(),
+                        data[i]["type"].get<std::string>(),
+                        data[i]["unit"].get<std::string>(),
+                        data[i]["value"].get<float>(),
+                        (Vector3){data[i]["position"]["x"].get<float>(),
+                                  data[i]["position"]["y"].get<float>(),
+                                  data[i]["position"]["z"].get<float>()},
+                        data[i]["angle"].get<float>(),
+                        data[i]["options"].get<std::map<std::string, float>>(),
+                        mode);
 
-              } else if (data[i]["type"].get<std::string>() == "door") {
-                sensor = std::make_unique<Door>(
-                    data[i]["name"].get<std::string>(),
-                    data[i]["type"].get<std::string>(),
-                    data[i]["unit"].get<std::string>(),
-                    data[i]["value"].get<double>(),
-                    (Vector3){data[i]["position"]["x"].get<float>(),
-                              data[i]["position"]["y"].get<float>(),
-                              data[i]["position"]["z"].get<float>()},
-                    data[i]["angle"].get<float>());
-              } else if (data[i]["type"].get<std::string>() == "window") {
-                sensor = std::make_unique<Window>(
-                    data[i]["name"].get<std::string>(),
-                    data[i]["type"].get<std::string>(),
-                    data[i]["unit"].get<std::string>(),
-                    data[i]["value"].get<double>(),
-                    (Vector3){data[i]["position"]["x"].get<float>(),
-                              data[i]["position"]["y"].get<float>(),
-                              data[i]["position"]["z"].get<float>()},
-                    data[i]["angle"].get<float>());
-              }
+                  } else if (data[i]["type"].get<std::string>() == "door") {
+                    sensor = std::make_unique<Door>(
+                        data[i]["name"].get<std::string>(),
+                        data[i]["type"].get<std::string>(),
+                        data[i]["unit"].get<std::string>(),
+                        data[i]["value"].get<float>(),
+                        (Vector3){data[i]["position"]["x"].get<float>(),
+                                  data[i]["position"]["y"].get<float>(),
+                                  data[i]["position"]["z"].get<float>()},
+                        data[i]["angle"].get<float>(),
+                        data[i]["options"].get<std::map<std::string, float>>(),
+                        mode);
 
-              if (sensor) {
-                sensors.push_back(std::move(sensor));
+                  } else if (data[i]["type"].get<std::string>() == "window") {
+                    sensor = std::make_unique<Window>(
+                        data[i]["name"].get<std::string>(),
+                        data[i]["type"].get<std::string>(),
+                        data[i]["unit"].get<std::string>(),
+                        data[i]["value"].get<float>(),
+                        (Vector3){data[i]["position"]["x"].get<float>(),
+                                  data[i]["position"]["y"].get<float>(),
+                                  data[i]["position"]["z"].get<float>()},
+                        data[i]["angle"].get<float>(),
+                        data[i]["options"].get<std::map<std::string, float>>(),
+                        mode);
+                  }
+
+                  if (sensor) {
+                    sensors.push_back(std::move(sensor));
+                  }
+                }
+                isReady = true;
+                std::cout << "[***]SENSOR SIZE " << sensors.size() << "\n";
               }
             }
-            isReady = true;
-            std::cout << "[***]SENSOR SIZE " << sensors.size() << "\n";
-          }
-        }
 
-      } catch (...) {
-        std::cerr << "[!] Client parser error" << '\n';
-        isParseError = true;
-      }
-      mut.unlock();
-    }
-  });
+          } catch (...) {
+            std::cerr << "[!] Client parser error" << '\n';
+            isParseError = true;
+          }
+          this->mut.unlock();
+        }
+      });
 }
 
 void ClientDigitalTwin::Client::Run() { webSocket.start(); }

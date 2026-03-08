@@ -10,6 +10,7 @@
 #include <raygui/raygui.h>
 #include "camera.hpp"
 #include <memory>
+#include "manager.hpp"
 
 int main() {
   INIReader reader(ClientDigitalTwin::CONFIG_FILE);
@@ -25,9 +26,11 @@ int main() {
       reader.GetInteger("server", "port", 5000),
   };
 
+  ClientDigitalTwin::Manager manager;
+
   std::vector<std::unique_ptr<ClientDigitalTwin::Sensor>> sensors;
   ClientDigitalTwin::Client client(url, ClientDigitalTwin::PING_INTERVAL);
-  client.Handler(sensors);
+  client.Handler(sensors, manager.GetMode());
   client.Run();
 
   // --- Window App ---

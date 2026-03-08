@@ -9,7 +9,7 @@ namespace ClientDigitalTwin {
 class Client {
 public:
   Client(const URL &url, const int ping);
-  void Handler(std::vector<std::unique_ptr<ClientDigitalTwin::Sensor>> &sensors);
+  void Handler(std::vector<std::unique_ptr<ClientDigitalTwin::Sensor>> &sensors, Mode mode);
   void Run();
   void Close();
   void Send(const std::string &method, const std::vector<std::string> &params,

@@ -96,23 +96,35 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
     sensor.push_back({{"name", "kitchen_temp_1"},
                       {"type", "temperature"},
                       {"unit", "'C"},
-                      {"value", randomValue(-50.0, 50.0)},
+                      {"value", randomValue(-50.0f, 50.0f)},
                       {"position", nlohmann::json({
-                                       {"x", 2.0},
+                                       {"x", 2.0f},
                                        {"y", posY},
-                                       {"z", 3.0},
+                                       {"z", 3.0f},
                                    })},
-                      {"angle", 180.0}});
+                      {"angle", 180.0f},
+                      {"options", nlohmann::json({
+                                      {"heating", 1.0f},
+                                      {"max", 35.0f},
+                                      {"min", 5.0f},
+                                      {"recommended", 21.0f},
+                                  })}});
     sensor.push_back({{"name", "kitchen_hum_1"},
                       {"type", "humidity"},
                       {"unit", "%"},
-                      {"value", randomValue(0.0, 100.0)},
+                      {"value", randomValue(0.0f, 100.0f)},
                       {"position", nlohmann::json({
-                                       {"x", 3.0},
+                                       {"x", 3.0f},
                                        {"y", posY},
-                                       {"z", 3.0},
+                                       {"z", 3.0f},
                                    })},
-                      {"angle", 180.0}});
+                      {"angle", 180.0f},
+                      {"options", nlohmann::json({
+                                      {"humify", 1.0f},
+                                      {"max", 65.0f},
+                                      {"min", 35.0f},
+                                      {"recommended", 45.0f},
+                                  })}});
     sensor.push_back({{"name", "kitchen_gas_1"},
                       {"type", "gas"},
                       {"unit", "bool"},
@@ -122,7 +134,8 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                                        {"y", posY},
                                        {"z", 1.0},
                                    })},
-                      {"angle", 0.0}});
+                      {"angle", 0.0},
+                      {"options", nlohmann::json({})}});
     sensor.push_back({{"name", "kitchen_smoke_1"},
                       {"type", "smoke"},
                       {"unit", "bool"},
@@ -132,17 +145,21 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                                        {"y", posY},
                                        {"z", 1.0},
                                    })},
-                      {"angle", 0.0}});
+                      {"angle", 0.0},
+                      {"options", nlohmann::json({})}});
     sensor.push_back({{"name", "kitchen_light_1"},
                       {"type", "light"},
                       {"unit", "bool"},
-                      {"value", 1.0},
+                      {"value", 1.0f},
                       {"position", nlohmann::json({
-                                       {"x", 4.0},
+                                       {"x", 4.0f},
                                        {"y", posY},
-                                       {"z", 1.0},
+                                       {"z", 1.0f},
                                    })},
-                      {"angle", 0.0}});
+                      {"angle", 0.0f},
+                      {"options", nlohmann::json({
+                                      {"bright", 50.0f},
+                                  })}});
     sensor.push_back({{"name", "kitchen_motion_1"},
                       {"type", "motion"},
                       {"unit", "bool"},
@@ -152,34 +169,43 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                                        {"y", posY},
                                        {"z", 3.0},
                                    })},
-                      {"angle", 180.0}});
+                      {"angle", 180.0},
+                      {"options", nlohmann::json({
+                                      {"alarm", 0.0f},
+                                  })}});
     sensor.push_back({{"name", "kitchen_door_1"},
                       {"type", "door"},
+                      {"unit", "bool"},
+                      {"value", 0.0f},
+                      {"position", nlohmann::json({
+                                       {"x", 5.0f},
+                                       {"y", posY},
+                                       {"z", 3.0f},
+                                   })},
+                      {"angle", 180.0f},
+                      {"options", nlohmann::json({
+                                      {"alarm", 0.0f},
+                                  })}});
+    sensor.push_back({{"name", "kitchen_window_1"},
+                      {"type", "window"},
                       {"unit", "bool"},
                       {"value", 0.0},
                       {"position", nlohmann::json({
                                        {"x", 5.0},
                                        {"y", posY},
-                                       {"z", 3.0},
-                                   })},
-                      {"angle", 180.0}});
-    sensor.push_back({{"name", "kitchen_window_1"},
-                      {"type", "window"},
-                      {"unit", "bool"},
-                      {"value", 1.0},
-                      {"position", nlohmann::json({
-                                       {"x", 5.0},
-                                       {"y", posY},
                                        {"z", 1.0},
                                    })},
-                      {"angle", 0.0}});
+                      {"angle", 0.0},
+                      {"options", nlohmann::json({
+                                      {"alarm", 0.0f},
+                                  })}});
   }
   return sensor;
 }
 
-double ServerDigitalTwin::Server::randomValue(double min, double max) {
+float ServerDigitalTwin::Server::randomValue(float min, float max) {
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_real_distribution<double> dist(min, max);
+  std::uniform_real_distribution<float> dist(min, max);
   return dist(gen);
 }

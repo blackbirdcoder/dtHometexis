@@ -13,7 +13,7 @@ public:
 
 private:
   nlohmann::json generate(const std::string &room);
-  double randomValue(double min, double max); 
+  float randomValue(float min, float max); 
   ix::WebSocketServer webSocket;
 };
 

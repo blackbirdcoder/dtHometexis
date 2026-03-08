@@ -1,10 +1,10 @@
 #include "sensor.hpp"
-#include <sstream>
-#include <iostream>
 
 ClientDigitalTwin::Sensor::Sensor(std::string name, std::string type,
-                                  std::string unit, double value,
-                                  Vector3 position, float angle) {
+                                  std::string unit, float value,
+                                  Vector3 position, float angle,
+                                  ClientDigitalTwin::Option options,
+                                  ClientDigitalTwin::Mode mode) {
   this->name = name;
   this->type = type;
   this->unit = unit;
@@ -20,6 +20,11 @@ ClientDigitalTwin::Sensor::Sensor(std::string name, std::string type,
   this->angle = angle;
   this->distanceLimit = 21.0f;
   this->windowSize = {250.0f, 140.0f};
+  this->mode = mode;
+  this->indicateColor = GREEN;
+  this->danger = false;
+  this->options = options;
+  this->type[0] = std::toupper(this->type[0]);
 }
 
 void ClientDigitalTwin::Sensor::ClickHandler(const Camera &camera,
@@ -82,27 +87,8 @@ void ClientDigitalTwin::Sensor::ShowWindow(const Camera3D &camera) {
       windowRect = {-50.0f, -50.0f, 0.0f, 0.0f};
       this->openWindow = false;
     }
-    GuiLabel(
-        (Rectangle){
-            this->windowRect.x,
-            this->windowRect.y + 20.0f,
-            200.0f,
-            20.0f,
-        },
-        this->GetIndication().c_str());
+    drawIndication();
   }
-}
-
-std::string ClientDigitalTwin::Sensor::GetIndication() const {
-  std::ostringstream str;
-
-  if (this->unit != "bool") {
-    str << this->type << ":" << this->value << this->unit;
-  } else {
-    str << this->type << ":" << (this->value ? "on" : "off");
-  }
-
-  return str.str();
 }
 
 void ClientDigitalTwin::Sensor::Draw(Model &model) {
@@ -167,4 +153,11 @@ void ClientDigitalTwin::Sensor::DrawName(const Camera3D &camera,
           this->name.c_str());
     }
   }
+}
+
+void ClientDigitalTwin::Sensor::drawIndication() const {
+  DrawCircle(this->windowRect.x + 235.0f, this->windowRect.y + 36.0f, 7.0f,
+             GRAY);
+  DrawCircle(this->windowRect.x + 235.0f, this->windowRect.y + 36.0f, 6.0f,
+             this->indicateColor);
 }

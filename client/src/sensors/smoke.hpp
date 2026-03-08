@@ -4,11 +4,11 @@
 namespace ClientDigitalTwin {
 class Smoke : public Sensor {
 public:
-  Smoke(std::string name, std::string type, std::string unit,
-              double value, Vector3 position, float angle);
+  Smoke(std::string name, std::string type, std::string unit, float value,
+        Vector3 position, float angle, Option options, Mode mode);
   void ShowWindow(const Camera3D &camera) override;
 
 private:
-    const char *test = "HELLO SMOKE";
+  bool isSmoke;
 };
 } // namespace ClientDigitalTwin
