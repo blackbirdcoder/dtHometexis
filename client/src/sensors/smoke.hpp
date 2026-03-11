@@ -9,6 +9,12 @@ public:
   void ShowWindow(const Camera3D &camera) override;
 
 private:
-  bool isSmoke;
+  float value;
+  float limit;
+  struct {
+    float value;
+    float min;
+    float max;
+  } supply;
 };
 } // namespace ClientDigitalTwin

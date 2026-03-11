@@ -100,6 +100,7 @@ int main() {
     //----------------
 
     //--- GUI ---
+    manager.SelectOperatingMode();
     if (client.IsSensorsReady()) {
       for (auto &sensor : sensors) {
         sensor->DrawName(camera3d.Get(), camera3d.GetDistance());
