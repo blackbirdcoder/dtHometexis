@@ -5,17 +5,19 @@ ClientDigitalTwin::Door::Door(std::string name, std::string type,
                               float angle, ClientDigitalTwin::Option options,
                               ClientDigitalTwin::Mode mode)
     : Sensor(name, type, unit, value, position, angle, options, mode) {
-  this->isOpen = value;
-
-  try {
-    this->isAlarm = static_cast<bool>(this->options.at("alarm"));
-  } catch (...) {
-    this->isAlarm = false;
-  }
+  this->isOpen = static_cast<bool>(value);
+  this->oldStateOpen = this->isOpen;
+  this->parsingOption();
 }
 
 void ClientDigitalTwin::Door::ShowWindow(const Camera3D &camera) {
   Sensor::ShowWindow(camera);
+
+  if (this->mode != this->oldMode) {
+    this->isOpen = static_cast<bool>(value);
+    this->parsingOption();
+    this->oldMode = this->mode;
+  }
 
   // Current value notifications
   std::string openText = this->type + ": " + (this->isOpen ? "open" : "close");
@@ -28,11 +30,20 @@ void ClientDigitalTwin::Door::ShowWindow(const Camera3D &camera) {
   GuiCheckBox(
       {this->windowRect.x + 7.0f, this->windowRect.y + 55.0f, 15.0f, 15.0f},
       "Turn alarm", &this->isAlarm);
+
   if (this->isAlarm && this->isOpen) {
     this->indicateColor = RED;
   } else {
     this->indicateColor = GREEN;
   }
+
+  bool isControl = this->mode == ClientDigitalTwin::Mode::CONTROL;
+
+  if (this->isAlarm != this->oldStateAlarm && isControl) {
+    this->makeOption();
+    this->isChangeOption = true;
+  }
+  this->oldStateAlarm = this->isAlarm;
   //-----
 
   // Toggle door
@@ -40,12 +51,33 @@ void ClientDigitalTwin::Door::ShowWindow(const Camera3D &camera) {
   if (GuiButton({this->windowRect.x + 143.0f, this->windowRect.y + 102.0f,
                  100.0f, 30.0f},
                 btnText.c_str())) {
-    this->isOpen = !isOpen;
+    this->isOpen = !this->isOpen;
   }
-  if (this->isOpen) {
-    //...
+  if (this->isOpen != this->oldStateOpen && isControl) {
+    this->makeValue();
+    this->isChangeValue = true;
   } else {
     //...
   }
+
+  this->oldStateOpen = this->isOpen;
   //-----
+}
+
+void ClientDigitalTwin::Door::parsingOption() {
+  try {
+    this->isAlarm = static_cast<bool>(this->options.at("alarm"));
+    this->oldStateAlarm = this - isAlarm;
+  } catch (...) {
+    this->isAlarm = false;
+    this->oldStateAlarm = this->isAlarm;
+  }
+}
+
+void ClientDigitalTwin::Door::makeOption() {
+  this->sendOption["alarm"] = static_cast<float>(this->isAlarm);
+}
+
+void ClientDigitalTwin::Door::makeValue() {
+  this->sendValue["value"] = static_cast<float>(this->isOpen);
 }

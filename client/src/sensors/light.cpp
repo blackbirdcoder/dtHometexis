@@ -6,19 +6,21 @@ ClientDigitalTwin::Light::Light(std::string name, std::string type,
                                 ClientDigitalTwin::Mode mode)
     : Sensor(name, type, unit, value, position, angle, options, mode) {
   this->isOn = static_cast<bool>(value);
+  this->oldStateOn = this->isOn;
   this->warning = {5.0f, 90.0f};
-
-  float min = 1.0f;
-  float max = 100.0f;
-  try {
-    this->bright = {this->options.at("bright"), min, max};
-  } catch (...) {
-    this->bright = {20.0f, min, max};
-  }
+  this->min = 1.0f;
+  this->max = 100.0f;
+  this->parsingOption();
 }
 
 void ClientDigitalTwin::Light::ShowWindow(const Camera3D &camera) {
   Sensor::ShowWindow(camera);
+
+  if (this->mode != this->oldMode) {
+    this->isOn = static_cast<bool>(value);
+    this->parsingOption();
+    this->oldMode = this->mode;
+  }
 
   // Current value notifications
   std::string lightText = this->type + ": " + (this->isOn ? "on" : "off");
@@ -26,6 +28,8 @@ void ClientDigitalTwin::Light::ShowWindow(const Camera3D &camera) {
       {this->windowRect.x + 5.0f, this->windowRect.y + 25.0f, 200.0f, 20.0f},
       lightText.c_str());
   //-----
+
+  bool isControl = this->mode == ClientDigitalTwin::Mode::CONTROL;
 
   // Value bright
   if (!this->isOn) {
@@ -35,6 +39,13 @@ void ClientDigitalTwin::Light::ShowWindow(const Camera3D &camera) {
       {this->windowRect.x + 49.0f, this->windowRect.y + 55.0f, 100.0f, 15.0f},
       "Bright ", TextFormat("%i%%", static_cast<int>(this->bright.value)),
       &this->bright.value, this->bright.min, this->bright.max);
+  if (this->bright.value != this->bright.oldValue && isControl) {
+    this->makeOption();
+    this->isChangeOption = true;
+  }
+
+  this->bright.oldValue = this->bright.value;
+
   if (!this->isOn) {
     GuiEnable();
   }
@@ -46,11 +57,14 @@ void ClientDigitalTwin::Light::ShowWindow(const Camera3D &camera) {
                 "Toggle")) {
     this->isOn = !isOn;
   }
-  if (this->isOn) {
-    //...
+  if (this->isOn != this->oldStateOn && isControl) {
+    this->makeValue();
+    this->isChangeValue = true;
   } else {
     //...
   }
+
+  this->oldStateOn = this->isOn;
   //-----
 
   // Indicate
@@ -65,4 +79,21 @@ void ClientDigitalTwin::Light::ShowWindow(const Camera3D &camera) {
     this->indicateColor = GREEN;
   }
   //-----
+}
+
+void ClientDigitalTwin::Light::parsingOption() {
+  try {
+    this->bright = {this->options.at("bright"), this->options.at("bright"),
+                    this->min, this->max};
+  } catch (...) {
+    this->bright = {20.0f, 20.0f, this->min, this->max};
+  }
+}
+
+void ClientDigitalTwin::Light::makeOption() {
+  this->sendOption["bright"] = this->bright.value;
+}
+
+void ClientDigitalTwin::Light::makeValue() {
+  this->sendValue["value"] = static_cast<float>(this->isOn);
 }

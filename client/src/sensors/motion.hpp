@@ -11,7 +11,11 @@ public:
 private:
   bool isMove;
   bool isTrack;
+  bool oldStateTrack;
   bool isAlarm;
+  bool oldStateAlarm;
   bool isSimulateMove;
+  void parsingOption() override;
+  void makeOption() override;
 };
 } // namespace ClientDigitalTwin

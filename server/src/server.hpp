@@ -3,7 +3,6 @@
 #include <ixwebsocket/IXWebSocketServer.h>
 #include <nlohmann/json.hpp>
 
-
 namespace ServerDigitalTwin {
 class Server {
 public:
@@ -13,8 +12,9 @@ public:
 
 private:
   nlohmann::json generate(const std::string &room);
-  float randomValue(float min, float max); 
+  float randomValue(float min, float max);
   ix::WebSocketServer webSocket;
+  nlohmann::json sensors;
 };
 
 } // namespace ServerDigitalTwin

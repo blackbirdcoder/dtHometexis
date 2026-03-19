@@ -7,18 +7,17 @@ ClientDigitalTwin::Motion::Motion(std::string name, std::string type,
                                   ClientDigitalTwin::Mode mode)
     : Sensor(name, type, unit, value, position, angle, options, mode) {
   this->isMove = value;
-  this->isTrack = true;
   this->isSimulateMove = false;
-
-  try {
-    this->isAlarm = static_cast<bool>(this->options.at("alarm"));
-  } catch (...) {
-    this->isAlarm = false;
-  }
+  this->parsingOption();
 }
 
 void ClientDigitalTwin::Motion::ShowWindow(const Camera3D &camera) {
   Sensor::ShowWindow(camera);
+
+  if (this->mode != this->oldMode) {
+    this->parsingOption();
+    this->oldMode = this->mode;
+  }
 
   // Current value notifications
   if (!this->isTrack) {
@@ -36,15 +35,20 @@ void ClientDigitalTwin::Motion::ShowWindow(const Camera3D &camera) {
   }
   //-----
 
+  bool isControl = this->mode == ClientDigitalTwin::Mode::CONTROL;
+
   // Selecting a option
   GuiCheckBox(
       {this->windowRect.x + 7.0f, this->windowRect.y + 30.0f, 15.0f, 15.0f},
       "Track motion", &this->isTrack);
-  if (this->isTrack) {
-    //...
+
+  if (this->isTrack != this->oldStateTrack && isControl) {
+    this->makeOption();
+    this->isChangeOption = true;
   } else {
     //...
   }
+  this->oldStateTrack = this->isTrack;
 
   if (!this->isTrack) {
     GuiDisable();
@@ -57,13 +61,20 @@ void ClientDigitalTwin::Motion::ShowWindow(const Camera3D &camera) {
   } else {
     //...
   }
+
+  if (this->isAlarm != this->oldStateAlarm && isControl) {
+    this->makeOption();
+    this->isChangeOption = true;
+  }
+
+  this->oldStateAlarm = this->isAlarm;
+
   if (!this->isTrack) {
     GuiEnable();
   }
   //-----
 
   // Set work simulation
-  bool isControl = this->mode == ClientDigitalTwin::Mode::CONTROL;
 
   if (isControl) {
     GuiDisable();
@@ -80,4 +91,19 @@ void ClientDigitalTwin::Motion::ShowWindow(const Camera3D &camera) {
     GuiEnable();
   }
   //-----
+}
+
+void ClientDigitalTwin::Motion::parsingOption() {
+  try {
+    this->isTrack = static_cast<bool>(this->options.at("track"));
+    this->isAlarm = static_cast<bool>(this->options.at("alarm"));
+  } catch (...) {
+    this->isTrack = true;
+    this->isAlarm = false;
+  }
+}
+
+void ClientDigitalTwin::Motion::makeOption() {
+  this->sendOption["track"] = static_cast<float>(this->isTrack);
+  this->sendOption["alarm"] = static_cast<float>(this->isAlarm);
 }

@@ -3,14 +3,12 @@
 #include <raylib.h>
 #include <raygui/raygui.h>
 #include "settings.hpp"
-#include <map>
 
 namespace ClientDigitalTwin {
 class Sensor {
 public:
   Sensor(std::string name, std::string type, std::string unit, float value,
          Vector3 position, float angle, Option options, Mode mode);
-  // std::string GetIndication() const; // Edit method
   void virtual ShowWindow(const Camera3D &camera);
   void Draw(Model &model);
   Vector3 GetPosition();
@@ -19,9 +17,20 @@ public:
   const Rectangle &GetWindowRect() const;
   void ClickHandler(const Camera &camera, bool isBusyCursor);
   void DrawName(const Camera3D &camera, const float distance) const;
+  void ModeUpdate(Mode mode);
+  void Update(float value, Option options);
+  const std::string &GetName() const;
+  virtual ~Sensor() = default;
+  void ResetChangeFlagOption();
+  const bool IsChangeOptions() const;
+  Option GetNewOption() const;
+  void ResetChangeFlagValue();
+  const bool IsChangeValue() const;
+  Option GetNewValue() const;
 
 protected:
   Mode mode;
+  Mode oldMode;
   bool openWindow;
   std::string name;
   std::string type;
@@ -43,8 +52,14 @@ protected:
   } windowSize;
   Color indicateColor;
   bool danger;
-  std::map<std::string, float> options;
-
+  Option options;
+  bool isChangeOption;
+  Option sendOption;
+  Option sendValue;
+  bool isChangeValue;
   void drawIndication() const;
+  void virtual parsingOption();
+  void virtual makeOption();
+  void virtual makeValue();
 };
 } // namespace ClientDigitalTwin

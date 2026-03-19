@@ -11,6 +11,7 @@ public:
 private:
   struct Humidifier {
     bool humify;
+    bool oldState;
     uint8_t min;
     uint8_t max;
     char percentText[4];
@@ -18,5 +19,8 @@ private:
   uint8_t indicationLeak;
   float humidityForSimulation;
   uint8_t humidity;
+  uint8_t oldHumidity;
+  void parsingOption() override;
+  void makeOption() override;
 };
 } // namespace ClientDigitalTwin

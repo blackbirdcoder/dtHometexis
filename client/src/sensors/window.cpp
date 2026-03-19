@@ -7,16 +7,18 @@ ClientDigitalTwin::Window::Window(std::string name, std::string type,
                                   ClientDigitalTwin::Mode mode)
     : Sensor(name, type, unit, value, position, angle, options, mode) {
   this->isOpen = value;
-
-  try {
-    this->isAlarm = static_cast<bool>(this->options.at("alarm"));
-  } catch (...) {
-    this->isAlarm = false;
-  }
+  this->oldStateOpen = this->isOpen;
+  this->parsingOption();
 }
 
 void ClientDigitalTwin::Window::ShowWindow(const Camera3D &camera) {
   Sensor::ShowWindow(camera);
+
+  if (this->mode != this->oldMode) {
+    this->isOpen = static_cast<bool>(value);
+    this->parsingOption();
+    this->oldMode = this->mode;
+  }
 
   // Current value notifications
   std::string openText = this->type + ": " + (this->isOpen ? "open" : "close");
@@ -34,6 +36,14 @@ void ClientDigitalTwin::Window::ShowWindow(const Camera3D &camera) {
   } else {
     this->indicateColor = GREEN;
   }
+
+  bool isControl = this->mode == ClientDigitalTwin::Mode::CONTROL;
+
+  if (this->isAlarm != this->oldStateAlarm && isControl) {
+    this->makeOption();
+    this->isChangeOption = true;
+  }
+  this->oldStateAlarm = this->isAlarm;
   //-----
 
   // Toggle window
@@ -43,10 +53,31 @@ void ClientDigitalTwin::Window::ShowWindow(const Camera3D &camera) {
                 btnText.c_str())) {
     this->isOpen = !isOpen;
   }
-  if (this->isOpen) {
-    //...
+  if (this->isOpen != this->oldStateOpen && isControl) {
+    this->makeValue();
+    this->isChangeValue = true;
   } else {
     //...
   }
+
+  this->oldStateOpen = this->isOpen;
   //-----
+}
+
+void ClientDigitalTwin::Window::parsingOption() {
+  try {
+    this->isAlarm = static_cast<bool>(this->options.at("alarm"));
+    this->oldStateAlarm = this - isAlarm;
+  } catch (...) {
+    this->isAlarm = false;
+    this->oldStateAlarm = this->isAlarm;
+  }
+}
+
+void ClientDigitalTwin::Window::makeOption() {
+  this->sendOption["alarm"] = static_cast<float>(this->isAlarm);
+}
+
+void ClientDigitalTwin::Window::makeValue() {
+  this->sendValue["value"] = static_cast<float>(this->isOpen);
 }

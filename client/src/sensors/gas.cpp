@@ -5,54 +5,80 @@ ClientDigitalTwin::Gas::Gas(std::string name, std::string type,
                             float angle, ClientDigitalTwin::Option options,
                             ClientDigitalTwin::Mode mode)
     : Sensor(name, type, unit, value, position, angle, options, mode) {
-  this->value = value;
-  this->supply = {this->value, 0.0f, 100.0f};
-
-  try {
-    this->limit = this->options.at("limit");
-  } catch (...) {
-    this->limit = 5.0f;
-  }
+  this->isOn = static_cast<bool>(value);
+  this->parsingOption();
 }
 
 void ClientDigitalTwin::Gas::ShowWindow(const Camera3D &camera) {
   Sensor::ShowWindow(camera);
 
-  // Current value notifications
-  int value = static_cast<int>(this->supply.value);
-  std::string openText = this->type + ": " + (value > 0 ? "yes" : "no");
+  if (this->mode != this->oldMode) {
+    this->isOn = static_cast<bool>(value);
+    this->parsingOption();
+    this->oldMode = this->mode;
+  }
+
+  std::string openText = this->type + ": " + (this->isOn ? "on" : "off");
   GuiLabel(
       {this->windowRect.x + 5.0f, this->windowRect.y + 25.0f, 200.0f, 20.0f},
       openText.c_str());
 
   std::string statusText = "Status: ";
-  statusText += value > static_cast<int>(this->limit) ? "accident" : "normal";
+  statusText += this->leak.value >= this->limit ? "accident" : "normal";
   GuiLabel(
       {this->windowRect.x + 5.0f, this->windowRect.y + 55.0f, 200.0f, 20.0f},
       statusText.c_str());
-  //-----
 
-  // Let it smoke simulation
+  // Let it gas simulation
   bool isControl = this->mode == ClientDigitalTwin::Mode::CONTROL;
 
   if (isControl) {
     GuiDisable();
   }
   GuiSlider(
-      {this->windowRect.x + 52.0f, this->windowRect.y + 85.0f, 100.0f, 15.0f},
-      "Supply ", TextFormat("%i%%", static_cast<int>(this->supply.value)),
-      &this->supply.value, this->supply.min, this->supply.max);
+      {this->windowRect.x + 7.0f, this->windowRect.y + 85.0f, 100.0f, 15.0f},
+      nullptr, TextFormat("%i%%", static_cast<int>(this->leak.value)),
+      &this->leak.value, this->leak.min, this->leak.max);
   if (isControl) {
     GuiEnable();
   }
 
+  // Toggle gas
+  std::string btnText = this->isOn ? "Off" : "On";
+  if (GuiButton({this->windowRect.x + 143.0f, this->windowRect.y + 102.0f,
+                 100.0f, 30.0f},
+                btnText.c_str())) {
+    this->isOn = !this->isOn;
+  }
+
+  if (this->isOn != this->oldStateOn && isControl) {
+    this->makeValue();
+    this->isChangeValue = true;
+  }
+
+  this->oldStateOn = this->isOn;
   //-----
 
   // Show indicate
-  if (this->supply.value >= this->limit) {
+  if (this->leak.value >= this->limit) {
     this->indicateColor = RED;
   } else {
     this->indicateColor = GREEN;
   }
   //-----
+}
+
+void ClientDigitalTwin::Gas::parsingOption() {
+  try {
+    this->limit = this->options.at("limit");
+    this->leak = {this->options.at("leak"), this->options.at("leak"), 0.0f,
+                  100.0f};
+  } catch (...) {
+    this->limit = 5.0f;
+    this->leak = {1.0f, 1.0f, 0.0f, 100.0f};
+  }
+}
+
+void ClientDigitalTwin::Gas::makeValue() {
+  this->sendValue["value"] = static_cast<float>(this->isOn);
 }

@@ -11,8 +11,11 @@
 #include "camera.hpp"
 #include <memory>
 #include "manager.hpp"
+#include <nlohmann/json.hpp>
 
 int main() {
+  bool check = false;
+
   INIReader reader(ClientDigitalTwin::CONFIG_FILE);
 
   if (reader.ParseError() < 0) {
@@ -40,12 +43,8 @@ int main() {
   GuiLoadStyle("assets/style/style_terminal.rgs");
   GuiSetStyle(DEFAULT, TEXT_SIZE, ClientDigitalTwin::SIZE);
   Model modelSensor = LoadModel("assets/models/sensor.glb");
-
-  std::string t = ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR];
-  std::string m = "GetDataSensors";
-  std::vector<std::string> v = {"parA", "parB"};
-  ClientDigitalTwin::id_measure id = 2;
-  client.Send(m, v, t, id);
+  client.Send("GetDataSensors", {},
+              ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR], 2);
 
   while (!WindowShouldClose()) {
     // --- Update ---
@@ -53,7 +52,20 @@ int main() {
     bool isBusyCursorUI = false;
 
     if (client.IsSensorsReady()) {
+
+      if (manager.GetMode() == ClientDigitalTwin::Mode::CONTROL &&
+          client.IsAllowUpdate()) {
+        client.Send("UpdateDataSensors", {},
+                    ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::UPDATE], 3);
+        client.SetAllowUpdate(false);
+
+      } else if (manager.GetMode() == ClientDigitalTwin::Mode::SIMULATION) {
+        client.SetAllowUpdate(true);
+      }
+
       for (auto &sensor : sensors) {
+        sensor->ModeUpdate(manager.GetMode());
+
         if (sensor->IsOpenWindow() &&
             CheckCollisionPointRec(GetMousePosition(),
                                    sensor->GetWindowRect())) {
@@ -65,24 +77,33 @@ int main() {
       for (auto &sensor : sensors) {
         sensor->ClickHandler(camera3d.Get(), isBusyCursorUI);
       }
-    }
 
-    // ==== temporary implementation!!!
-    if (IsKeyPressed(KEY_H)) {
-      std::string t = ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::HOME];
-      std::string m = "test";
-      std::vector<std::string> v = {"par1", "par2"};
-      ClientDigitalTwin::id_measure id = 1;
-      client.Send(m, v, t, id);
+      for (auto &sensor : sensors) {
+        if (sensor->IsChangeOptions()) {
+          std::vector<std::string> params{
+              nlohmann::json(sensor->GetName()),
+              nlohmann::to_string(nlohmann::json(sensor->GetNewOption()))}; 
+          client.Send("SetSensorOptions", params,
+                      ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SET], 4);
+          client.Send("UpdateDataSensors", {},
+                      ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::UPDATE],
+                      5);
+          sensor->ResetChangeFlagOption();
+        }
+
+        if (sensor->IsChangeValue()) {
+          std::vector<std::string> params{
+              nlohmann::json(sensor->GetName()),
+              nlohmann::to_string(nlohmann::json(sensor->GetNewValue()))};
+          client.Send("SetSensorValue", params,
+                      ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SET], 6);
+          client.Send("UpdateDataSensors", {},
+                      ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::UPDATE],
+                      7);
+          sensor->ResetChangeFlagValue();
+        }
+      }
     }
-    if (IsKeyPressed(KEY_B)) {
-      std::string t = ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR];
-      std::string m = "GetDataSensors";
-      std::vector<std::string> v = {"parA", "parB"};
-      ClientDigitalTwin::id_measure id = 2;
-      client.Send(m, v, t, id);
-    }
-    //===========================
     //----------------
 
     //--- Draw ---
@@ -101,6 +122,7 @@ int main() {
 
     //--- GUI ---
     manager.SelectOperatingMode();
+    manager.DrawTextMode();
     if (client.IsSensorsReady()) {
       for (auto &sensor : sensors) {
         sensor->DrawName(camera3d.Get(), camera3d.GetDistance());

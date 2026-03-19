@@ -10,6 +10,11 @@ public:
 
 private:
   bool isOpen;
+  bool oldStateOpen;
   bool isAlarm;
+  bool oldStateAlarm;
+  void parsingOption() override;
+  void makeOption() override;
+  void makeValue() override;
 };
 } // namespace ClientDigitalTwin

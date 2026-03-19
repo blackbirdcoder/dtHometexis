@@ -25,6 +25,8 @@ ClientDigitalTwin::Sensor::Sensor(std::string name, std::string type,
   this->danger = false;
   this->options = options;
   this->type[0] = std::toupper(this->type[0]);
+  this->isChangeOption = false;
+  this->isChangeValue = false;
 }
 
 void ClientDigitalTwin::Sensor::ClickHandler(const Camera &camera,
@@ -160,4 +162,49 @@ void ClientDigitalTwin::Sensor::drawIndication() const {
              GRAY);
   DrawCircle(this->windowRect.x + 235.0f, this->windowRect.y + 36.0f, 6.0f,
              this->indicateColor);
+}
+
+void ClientDigitalTwin::Sensor::ModeUpdate(Mode mode) {
+  if (this->mode != mode) {
+    this->mode = mode;
+  }
+}
+
+void ClientDigitalTwin::Sensor::Update(float value, Option options) {
+  this->value = value;
+  this->options = options;
+}
+
+const std::string &ClientDigitalTwin::Sensor::GetName() const {
+  return this->name;
+}
+
+void ClientDigitalTwin::Sensor::parsingOption() {}
+
+void ClientDigitalTwin::Sensor::ResetChangeFlagOption() {
+  this->isChangeOption = false;
+}
+
+const bool ClientDigitalTwin::Sensor::IsChangeOptions() const {
+  return this->isChangeOption;
+}
+
+ClientDigitalTwin::Option ClientDigitalTwin::Sensor::GetNewOption() const {
+  return this->sendOption;
+}
+
+void ClientDigitalTwin::Sensor::makeOption() {}
+
+void ClientDigitalTwin::Sensor::ResetChangeFlagValue() {
+  this->isChangeValue = false;
+}
+
+const bool ClientDigitalTwin::Sensor::IsChangeValue() const {
+  return this->isChangeValue;
+}
+
+void ClientDigitalTwin::Sensor::makeValue() {}
+
+ClientDigitalTwin::Option ClientDigitalTwin::Sensor::GetNewValue() const {
+  return this->sendValue;
 }

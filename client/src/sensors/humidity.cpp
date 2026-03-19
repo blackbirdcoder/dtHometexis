@@ -9,26 +9,31 @@ ClientDigitalTwin::Humidity::Humidity(std::string name, std::string type,
                                       ClientDigitalTwin::Mode mode)
     : Sensor(name, type, unit, value, position, angle, options, mode) {
   this->indicationLeak = 90;
-  this->humidity = static_cast<uint8_t>(std::round(this->value));
-  this->humidityForSimulation = static_cast<float>(this->humidity);
-
-  try {
-    this->humidifier.humify = static_cast<bool>((this->options.at("humify")));
-    this->humidifier.max = this->options.at("max");
-    this->humidifier.min = this->options.at("min");
-    std::string val =
-        std::to_string(static_cast<int>((this->options.at("recommended"))));
-    strcpy(this->humidifier.percentText, val.c_str());
-  } catch (...) {
-    this->humidifier.humify = true;
-    this->humidifier.min = 40;
-    this->humidifier.max = 60;
-    strcpy(this->humidifier.percentText, "50");
-  }
+  this->humidity = 0.0f;
+  this->oldHumidity = this->humidity;
+  this->humidityForSimulation = std::round(this->value);
+  this->parsingOption();
 }
 
 void ClientDigitalTwin::Humidity::ShowWindow(const Camera3D &camera) {
   Sensor::ShowWindow(camera);
+
+  if (this->mode != this->oldMode) {
+    this->parsingOption();
+    this->oldMode = this->mode;
+  }
+
+  this->humidity = static_cast<uint8_t>(std::round(this->value));
+  if (this->oldHumidity != this->humidity) {
+    this->humidityForSimulation = static_cast<float>(this->humidity);
+    this->oldHumidity = this->humidity;
+  }
+
+  bool isSimulation = this->mode == ClientDigitalTwin::Mode::SIMULATION;
+
+  if (isSimulation) {
+    this->humidity = this->humidityForSimulation;
+  }
 
   // Current value notifications
   std::string humidityText =
@@ -38,15 +43,21 @@ void ClientDigitalTwin::Humidity::ShowWindow(const Camera3D &camera) {
       humidityText.c_str());
   //-----
 
+  bool isControl = this->mode == ClientDigitalTwin::Mode::CONTROL;
+
   // Selecting a comfort mode
   GuiCheckBox(
       {this->windowRect.x + 7.0f, this->windowRect.y + 55.0f, 15.0f, 15.0f},
       "Air humidifier", &this->humidifier.humify);
-  if (this->humidifier.humify) {
-    //...
+
+  if (this->humidifier.humify != this->humidifier.oldState && isControl) {
+    this->makeOption();
+    this->isChangeOption = true;
   } else {
     //...
   }
+  this->humidifier.oldState = this->humidifier.humify;
+
   if (!this->humidifier.humify) {
     GuiDisable();
   }
@@ -57,6 +68,11 @@ void ClientDigitalTwin::Humidity::ShowWindow(const Camera3D &camera) {
     if (val > this->humidifier.min) {
       --val;
       strcpy(this->humidifier.percentText, std::to_string(val).c_str());
+
+      if (isControl) {
+        this->makeOption();
+        this->isChangeOption = true;
+      }
     }
   }
   GuiTextBox(
@@ -69,6 +85,11 @@ void ClientDigitalTwin::Humidity::ShowWindow(const Camera3D &camera) {
     if (val < this->humidifier.max) {
       ++val;
       strcpy(this->humidifier.percentText, std::to_string(val).c_str());
+
+      if (isControl) {
+        this->makeOption();
+        this->isChangeOption = true;
+      }
     }
   }
   GuiLabel(
@@ -94,10 +115,10 @@ void ClientDigitalTwin::Humidity::ShowWindow(const Camera3D &camera) {
   //-----
 
   // Set values ​​for simulation
-  bool isControl = this->mode == ClientDigitalTwin::Mode::CONTROL;
 
   if (isControl) {
     GuiDisable();
+    this->humidityForSimulation = humidity;
   }
   GuiSlider(
       {this->windowRect.x + 7.0f, this->windowRect.y + 110.0f, 100.0f, 15.0f},
@@ -108,4 +129,28 @@ void ClientDigitalTwin::Humidity::ShowWindow(const Camera3D &camera) {
     GuiEnable();
   }
   //-----
+}
+
+void ClientDigitalTwin::Humidity::parsingOption() {
+  try {
+    this->humidifier.humify = static_cast<bool>((this->options.at("humify")));
+    this->humidifier.oldState = this->humidifier.humify;
+    this->humidifier.max = this->options.at("max");
+    this->humidifier.min = this->options.at("min");
+    std::string val =
+        std::to_string(static_cast<int>((this->options.at("recommended"))));
+    strcpy(this->humidifier.percentText, val.c_str());
+  } catch (...) {
+    this->humidifier.humify = true;
+    this->humidifier.oldState = this->humidifier.humify;
+    this->humidifier.min = 40;
+    this->humidifier.max = 60;
+    strcpy(this->humidifier.percentText, "50");
+  }
+}
+
+void ClientDigitalTwin::Humidity::makeOption() {
+  this->sendOption["humify"] = static_cast<float>(this->humidifier.humify);
+  this->sendOption["recommended"] =
+      static_cast<float>(std::stoi(this->humidifier.percentText));
 }
