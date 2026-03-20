@@ -36,8 +36,9 @@ void ClientDigitalTwin::Client::Handler(
         } else if (response["tag"] ==
                    ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR]) {
           if (response["id"] != nlohmann::detail::value_t::null) {
-            auto data = response["result"]["kitchen"]["sensors"];
-            std::cout << "(*CLIENT*) DATA: " << data << "\n";
+            std::cout << "(*CLIENT*) RESPONSE RESULT: " << response["result"] << "\n\n";
+            auto data = response["result"]["sensors"];
+            //std::cout << "(*CLIENT*) DATA: " << data << "\n";
 
             for (int i = 0; i < data.size(); ++i) {
               std::unique_ptr<Sensor> sensor;
@@ -155,7 +156,7 @@ void ClientDigitalTwin::Client::Handler(
           }
         } else if (response["tag"] ==
                    ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::UPDATE]) {
-          auto data = response["result"]["kitchen"]["sensors"];
+          auto data = response["result"]["sensors"];
           std::cout << "(*CLIENT*) UPDATE BRANCH SIZE: " << data.size() << '\n';
 
           for (int i = 0; i < data.size(); ++i) {
