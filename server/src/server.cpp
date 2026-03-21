@@ -47,6 +47,7 @@ void ServerDigitalTwin::Server::Handler() {
               data["sensors"] = generate("kitchen");
               data["sensors"] = generate("bathroom");
               data["sensors"] = generate("hall");
+              data["sensors"] = generate("bedroom");
 
               response["id"] = request["id"];
               response["tag"] = request["tag"];
@@ -240,9 +241,9 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                              {"position", nlohmann::json({
                                               {"x", 5.0f},
                                               {"y", posY},
-                                              {"z", 3.0f},
+                                              {"z", 1.0f},
                                           })},
-                             {"angle", 180.0f},
+                             {"angle", 0.0f},
                              {"options", nlohmann::json({
                                              {"alarm", 0.0f},
                                          })}});
@@ -253,9 +254,9 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                              {"position", nlohmann::json({
                                               {"x", 5.0},
                                               {"y", posY},
-                                              {"z", 1.0},
+                                              {"z", 3.0},
                                           })},
-                             {"angle", 0.0f},
+                             {"angle", 180.0f},
                              {"options", nlohmann::json({
                                              {"alarm", 0.0f},
                                          })}});
@@ -267,13 +268,13 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                              {"position", nlohmann::json({
                                               {"x", -4.0f},
                                               {"y", posY},
-                                              {"z", 6.0f},
+                                              {"z", 2.0f},
                                           })},
                              {"angle", 90.0f},
                              {"options", nlohmann::json({
                                              {"heating", 1.0f},
                                              {"max", 35.0f},
-                                             {"min", 5.0f},
+                                             {"min", 3.0f},
                                              {"recommended", 21.0f},
                                          })}});
     this->sensors.push_back({{"name", "bathroom_hum_1"},
@@ -283,7 +284,7 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                              {"position", nlohmann::json({
                                               {"x", -4.0f},
                                               {"y", posY},
-                                              {"z", 5.0f},
+                                              {"z", 1.0f},
                                           })},
                              {"angle", 90.0f},
                              {"options", nlohmann::json({
@@ -299,7 +300,7 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                              {"position", nlohmann::json({
                                               {"x", -4.0},
                                               {"y", posY},
-                                              {"z", 4.0},
+                                              {"z", 0.0},
                                           })},
                              {"angle", 90.0f},
                              {"options", nlohmann::json({
@@ -313,7 +314,7 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                              {"position", nlohmann::json({
                                               {"x", -4.0f},
                                               {"y", posY},
-                                              {"z", 3.0f},
+                                              {"z", -1.0f},
                                           })},
                              {"angle", 90.0f},
                              {"options", nlohmann::json({
@@ -326,7 +327,7 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                              {"position", nlohmann::json({
                                               {"x", -4.0f},
                                               {"y", posY},
-                                              {"z", 2.0f},
+                                              {"z", -2.0f},
                                           })},
                              {"angle", 90.0f},
                              {"options", nlohmann::json({
@@ -372,6 +373,92 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                              {"angle", 90.0f},
                              {"options", nlohmann::json({
                                              {"bright", 50.0f},
+                                         })}});
+  } else if (room == "bedroom") {
+    this->sensors.push_back({{"name", "bedroom_temp_1"},
+                             {"type", "temperature"},
+                             {"unit", "C"},
+                             {"value", randomValue(-50.0f, 50.0f)},
+                             {"position", nlohmann::json({
+                                              {"x", -2.0f},
+                                              {"y", posY},
+                                              {"z", 6.0f},
+                                          })},
+                             {"angle", 90.0f},
+                             {"options", nlohmann::json({
+                                             {"heating", 1.0f},
+                                             {"max", 35.0f},
+                                             {"min", 5.0f},
+                                             {"recommended", 21.0f},
+                                         })}});
+    this->sensors.push_back({{"name", "bedroom_motion_1"},
+                             {"type", "motion"},
+                             {"unit", "bool"},
+                             {"value", 0.0f},
+                             {"position", nlohmann::json({
+                                              {"x", -2.0f},
+                                              {"y", posY},
+                                              {"z", 5.0},
+                                          })},
+                             {"angle", 90.0f},
+                             {"options", nlohmann::json({
+                                             {"track", 1.0f},
+                                             {"alarm", 0.0f},
+                                         })}});
+    this->sensors.push_back({{"name", "bedroom_light_1"},
+                             {"type", "light"},
+                             {"unit", "bool"},
+                             {"value", 1.0f},
+                             {"position", nlohmann::json({
+                                              {"x", -2.0f},
+                                              {"y", posY},
+                                              {"z", 4.0f},
+                                          })},
+                             {"angle", 90.0f},
+                             {"options", nlohmann::json({
+                                             {"bright", 50.0f},
+                                         })}});
+    this->sensors.push_back({{"name", "bedroom_hum_1"},
+                             {"type", "humidity"},
+                             {"unit", "%"},
+                             {"value", randomValue(0.0f, 100.0f)},
+                             {"position", nlohmann::json({
+                                              {"x", -1.0f},
+                                              {"y", posY},
+                                              {"z", 4.0f},
+                                          })},
+                             {"angle", 90.0f},
+                             {"options", nlohmann::json({
+                                             {"humify", 1.0f},
+                                             {"max", 65.0f},
+                                             {"min", 35.0f},
+                                             {"recommended", 45.0f},
+                                         })}});
+    this->sensors.push_back({{"name", "bedroom_door_1"},
+                             {"type", "door"},
+                             {"unit", "bool"},
+                             {"value", 0.0f},
+                             {"position", nlohmann::json({
+                                              {"x", -1.0f},
+                                              {"y", posY},
+                                              {"z", 5.0f},
+                                          })},
+                             {"angle", 270.0f},
+                             {"options", nlohmann::json({
+                                             {"alarm", 0.0f},
+                                         })}});
+    this->sensors.push_back({{"name", "bedroom_window_1"},
+                             {"type", "window"},
+                             {"unit", "bool"},
+                             {"value", 0.0f},
+                             {"position", nlohmann::json({
+                                              {"x", -1.0},
+                                              {"y", posY},
+                                              {"z", 6.0},
+                                          })},
+                             {"angle", 270.0f},
+                             {"options", nlohmann::json({
+                                             {"alarm", 0.0f},
                                          })}});
   }
   return this->sensors;
