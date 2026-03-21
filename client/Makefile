@@ -1,13 +1,15 @@
 # Makefile for Client
 # Thanks to Job Vranish (https://spin.atomicobject.com/2016/08/26/makefile-c-projects/)
+CC := clang
 TARGET_EXEC := client
 CXX := clang++
 BUILD_DIR := ./build
-SRC_DIRS := ./src ./external/inih ./external/ixwebsocket ./external/nlohmann ./external/raygui
+SRC_DIRS := ./src ./external/inih ./external/ixwebsocket ./external/nlohmann ./external/raygui ./external/sqlite ./external/SQLiteCpp/src
 LDLIBS := -lraylib -lm -ldl -lpthread -lX11
 CONFIG := settings.ini
 LDFLAGS += -pthread
 ASSETS_DIR := assets
+CXXFLAGS += -std=c++17
 
 
 # Find all the C and C++ files we want to compile
@@ -24,6 +26,7 @@ DEPS := $(OBJS:.o=.d)
 
 # Every folder in ./src will need to be passed to GCC so that it can find header files
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
+INC_DIRS += ./external/SQLiteCpp/include
 # Add a prefix to INC_DIRS. So moduleA would become -ImoduleA. GCC understands this -I flag
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 

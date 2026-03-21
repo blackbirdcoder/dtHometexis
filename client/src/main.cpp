@@ -12,8 +12,12 @@
 #include <memory>
 #include "manager.hpp"
 #include <nlohmann/json.hpp>
+// TODO: Continue
+//#include <SQLiteCpp/Database.h>
 
 int main() {
+  // SQLite::Database db("test.db", SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+  // db.exec("CREATE TABLE IF NOT EXISTS test (id INTEGER)");
   bool check = false;
 
   INIReader reader(ClientDigitalTwin::CONFIG_FILE);
@@ -82,7 +86,7 @@ int main() {
         if (sensor->IsChangeOptions()) {
           std::vector<std::string> params{
               nlohmann::json(sensor->GetName()),
-              nlohmann::to_string(nlohmann::json(sensor->GetNewOption()))}; 
+              nlohmann::to_string(nlohmann::json(sensor->GetNewOption()))};
           client.Send("SetSensorOptions", params,
                       ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SET], 4);
           client.Send("UpdateDataSensors", {},
