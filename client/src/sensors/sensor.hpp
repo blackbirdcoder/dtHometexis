@@ -27,6 +27,9 @@ public:
   void ResetChangeFlagValue();
   const bool IsChangeValue() const;
   Option GetNewValue() const;
+  const float GetValue() const;
+  const std::string &GetType() const;
+  std::string GetWhichRoom();
 
 protected:
   Mode mode;

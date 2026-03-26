@@ -15,6 +15,7 @@ private:
   float randomValue(float min, float max);
   ix::WebSocketServer webSocket;
   nlohmann::json sensors;
+  nlohmann::json rooms;
 };
 
 } // namespace ServerDigitalTwin

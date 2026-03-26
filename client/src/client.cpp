@@ -15,9 +15,10 @@ ClientDigitalTwin::Client::Client(const URL &url, const int ping) {
   std::string schema = "ws://" + url.host + ":" + std::to_string(url.port);
   this->webSocket.setUrl(schema);
   this->webSocket.setPingInterval(ping);
-  this->isReady = false;
+  this->isReadySensors = false;
   this->isParseError = false;
   this->isAllowUpdate = true;
+  this->isReadyNameRooms = false;
 }
 
 void ClientDigitalTwin::Client::Handler(
@@ -36,9 +37,10 @@ void ClientDigitalTwin::Client::Handler(
         } else if (response["tag"] ==
                    ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR]) {
           if (response["id"] != nlohmann::detail::value_t::null) {
-            std::cout << "(*CLIENT*) RESPONSE RESULT: " << response["result"] << "\n\n";
+            std::cout << "(*CLIENT*) RESPONSE RESULT: " << response["result"]
+                      << "\n\n";
             auto data = response["result"]["sensors"];
-            //std::cout << "(*CLIENT*) DATA: " << data << "\n";
+            // std::cout << "(*CLIENT*) DATA: " << data << "\n";
 
             for (int i = 0; i < data.size(); ++i) {
               std::unique_ptr<Sensor> sensor;
@@ -151,7 +153,7 @@ void ClientDigitalTwin::Client::Handler(
                 sensors.push_back(std::move(sensor));
               }
             }
-            isReady = true;
+            isReadySensors = true;
             std::cout << "(*CLIENT*) SENSOR SIZE: " << sensors.size() << "\n";
           }
         } else if (response["tag"] ==
@@ -169,6 +171,16 @@ void ClientDigitalTwin::Client::Handler(
               }
             }
           }
+        } else if (response["tag"] ==
+                   ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::ROOM]) {
+          auto data = response["result"].get<std::vector<std::string>>();
+
+          for (auto &item : data) {
+            item[0] = std::toupper(item[0]);
+            this->nameRooms.push_back(std::move(item));
+          }
+
+          this->isReadyNameRooms = true;
         }
 
       } catch (...) {
@@ -197,8 +209,10 @@ void ClientDigitalTwin::Client::Send(const std::string &method,
   webSocket.sendText(nlohmann::to_string(request));
 }
 
-bool ClientDigitalTwin::Client::IsSensorsReady() const { return isReady; };
-bool ClientDigitalTwin::Client::IsError() const { return isParseError; };
+bool ClientDigitalTwin::Client::IsSensorsReady() const {
+  return this->isReadySensors;
+};
+bool ClientDigitalTwin::Client::IsError() const { return this->isParseError; };
 
 const bool ClientDigitalTwin::Client::IsAllowUpdate() const {
   return this->isAllowUpdate;
@@ -206,4 +220,12 @@ const bool ClientDigitalTwin::Client::IsAllowUpdate() const {
 
 void ClientDigitalTwin::Client::SetAllowUpdate(bool value) {
   this->isAllowUpdate = value;
+}
+
+bool ClientDigitalTwin::Client::IsNameRoomsReady() const {
+  return this->isReadyNameRooms;
+}
+
+std::vector<std::string> ClientDigitalTwin::Client::GetNameRooms() {
+  return this->nameRooms;
 }

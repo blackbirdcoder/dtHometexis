@@ -19,13 +19,17 @@ public:
   bool IsError() const;
   const bool IsAllowUpdate() const;
   void SetAllowUpdate(bool value);
+  bool IsNameRoomsReady() const;
+  std::vector<std::string> GetNameRooms();
 
 private:
   ix::WebSocket webSocket;
   std::mutex mut;
-  bool isReady;
+  bool isReadySensors;
   bool isParseError;
   bool isAllowUpdate;
+  bool isReadyNameRooms;
+  std::vector<std::string> nameRooms;
 };
 
 } // namespace ClientDigitalTwin

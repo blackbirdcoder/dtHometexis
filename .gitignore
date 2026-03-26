@@ -69,3 +69,7 @@ Testing/
 
 #config ide
 .vscode/
+
+#SQLite 
+*.db
+*.db-journal

@@ -1,4 +1,6 @@
 #include "sensor.hpp"
+#include <sstream>
+#include <vector>
 
 ClientDigitalTwin::Sensor::Sensor(std::string name, std::string type,
                                   std::string unit, float value,
@@ -207,4 +209,22 @@ void ClientDigitalTwin::Sensor::makeValue() {}
 
 ClientDigitalTwin::Option ClientDigitalTwin::Sensor::GetNewValue() const {
   return this->sendValue;
+}
+
+const float ClientDigitalTwin::Sensor::GetValue() const { return this->value; }
+
+const std::string &ClientDigitalTwin::Sensor::GetType() const {
+  return this->type;
+}
+
+std::string ClientDigitalTwin::Sensor::GetWhichRoom() {
+  std::stringstream ss(this->name);
+  std::string token;
+  std::vector<std::string> tmp;
+  while (std::getline(ss, token, '_')) {
+    tmp.push_back(token);
+  }
+  tmp[0][0] = std::toupper(tmp[0][0]);
+
+  return tmp[0];
 }

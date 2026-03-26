@@ -12,16 +12,10 @@
 #include <memory>
 #include "manager.hpp"
 #include <nlohmann/json.hpp>
-// TODO: Continue
-//#include <SQLiteCpp/Database.h>
+#include "storage.hpp"
 
 int main() {
-  // SQLite::Database db("test.db", SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
-  // db.exec("CREATE TABLE IF NOT EXISTS test (id INTEGER)");
-  bool check = false;
-
   INIReader reader(ClientDigitalTwin::CONFIG_FILE);
-
   if (reader.ParseError() < 0) {
     std::cout << "[!] Error: Can't load"
               << "'" << ClientDigitalTwin::CONFIG_FILE << "'" << '\n';
@@ -34,11 +28,16 @@ int main() {
   };
 
   ClientDigitalTwin::Manager manager;
-
   std::vector<std::unique_ptr<ClientDigitalTwin::Sensor>> sensors;
   ClientDigitalTwin::Client client(url, ClientDigitalTwin::PING_INTERVAL);
   client.Handler(sensors, manager.GetMode());
   client.Run();
+
+  // --- DB init ---
+  std::string nameHome = reader.Get("client", "home", "Home");
+  ClientDigitalTwin::Storage::Instance().Init();
+  int homeID = ClientDigitalTwin::Storage::Instance().CreateHome(nameHome);
+  //----------------
 
   // --- Window App ---
   InitWindow(1024, 768, "Digital Twin Hometexis");
@@ -48,19 +47,59 @@ int main() {
   GuiSetStyle(DEFAULT, TEXT_SIZE, ClientDigitalTwin::SIZE);
   Model modelSensor = LoadModel("assets/models/sensor.glb");
   client.Send("GetDataSensors", {},
-              ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR], 2);
+              ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR], 1);
+  client.Send("GetNameRooms", {},
+              ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::ROOM], 2);
 
   while (!WindowShouldClose()) {
     // --- Update ---
+    if (client.IsNameRoomsReady() && !manager.IsCreateTableDB()) {
+      for (const auto room : client.GetNameRooms()) {
+        int id =
+            ClientDigitalTwin::Storage::Instance().CreateRoom(homeID, room, 1);
+        manager.MakeRoomIdentification(id, 1, room);
+      }
+      manager.EnableTableCreation();
+    }
+
     camera3d.Handler();
     bool isBusyCursorUI = false;
 
     if (client.IsSensorsReady()) {
 
+      if (!manager.IsCreateSensorDB()) {
+        for (auto &sensor : sensors) {
+          std::string type = sensor->GetType();
+          if (type == "Temperature" || type == "Humidity") {
+            std::string room = sensor->GetWhichRoom();
+            int id = manager.GetRoomID(room);
+            if (id != -1) {
+              manager.AddSensorID(
+                  sensor.get(),
+                  ClientDigitalTwin::Storage::Instance().CreateSensor(id,
+                                                                      type));
+            }
+          }
+        }
+        manager.EnableSensorCreation();
+      }
+
       if (manager.GetMode() == ClientDigitalTwin::Mode::CONTROL &&
           client.IsAllowUpdate()) {
         client.Send("UpdateDataSensors", {},
                     ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::UPDATE], 3);
+
+        if (!manager.IsSensorDataAdded()) {
+          for (auto &sensor : sensors) {
+            auto it = manager.GetSensorsID().find(sensor.get());
+            if (it != manager.GetSensorsID().end()) {
+              ClientDigitalTwin::Storage::Instance().AddSensorData(
+                  it->second, sensor->GetValue());
+            }
+          }
+          manager.EnableSensorDataAdded();
+        }
+
         client.SetAllowUpdate(false);
 
       } else if (manager.GetMode() == ClientDigitalTwin::Mode::SIMULATION) {

@@ -6,6 +6,8 @@
 ServerDigitalTwin::Server::Server(const URL &url)
     : webSocket(url.port, url.host) {
   this->sensors = nlohmann::json::array();
+  this->rooms =
+      nlohmann::json::array({"kitchen", "bathroom", "hall", "bedroom"});
 }
 
 void ServerDigitalTwin::Server::Handler() {
@@ -84,6 +86,17 @@ void ServerDigitalTwin::Server::Handler() {
               }
 
             } else if (request.contains("method") &&
+                       request["method"] == "GetNameRooms") {
+              std::cout << "*(SERVER)* NAME ROOMS METHODS\n";
+
+              nlohmann::json data;
+              data = this->rooms;
+              response["id"] = request["id"];
+              response["tag"] = request["tag"];
+              response["result"] = data;
+              ws.sendText(nlohmann::to_string(response));
+
+            } else if (request.contains("method") &&
                        request["method"] == "SetSensorValue") {
 
               std::string name = request["params"][0];
@@ -100,7 +113,6 @@ void ServerDigitalTwin::Server::Handler() {
                   }
                 }
               }
-
             } else if (request.contains("method")) {
               nlohmann::json error;
               error["code"] = -32601;
