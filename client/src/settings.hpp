@@ -10,7 +10,7 @@ extern const int PING_INTERVAL;
 extern const int SIZE;
 enum Tag { HOME, SENSOR, UPDATE, SET, ROOM };
 extern const std::array<std::string, 5> TAGS;
-typedef uint16_t id_measure;
+typedef size_t id_measure;
 enum class Mode { SIMULATION, CONTROL };
 typedef std::map<std::string, float> Option;
 
