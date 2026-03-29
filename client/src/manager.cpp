@@ -1,5 +1,7 @@
 #include "manager.hpp"
 #include <raygui/raygui.h>
+#include <limits>
+#include <iostream>
 
 ClientDigitalTwin::Manager::Manager() {
   this->currentMode = ClientDigitalTwin::Mode::SIMULATION;
@@ -91,7 +93,11 @@ void ClientDigitalTwin::Manager::EnableSensorDataAdded() {
   this->isSensorDataAdded = true;
 }
 
-const size_t &ClientDigitalTwin::Manager::GetRequestID() {
+const size_t &ClientDigitalTwin::Manager::CountRequestID() {
+  if (this->requestID == std::numeric_limits<size_t>::max()) {
+    this->requestID = 0;
+  }
   this->requestID++;
+
   return this->requestID;
 }

@@ -199,7 +199,7 @@ void ClientDigitalTwin::Client::Close() { webSocket.stop(); }
 void ClientDigitalTwin::Client::Send(const std::string &method,
                                      const std::vector<std::string> &params,
                                      const std::string &tag,
-                                     const uint16_t &id) {
+                                     const size_t &id) {
   nlohmann::json request;
   request["jsonrpc"] = "2.0";
   request["method"] = method;

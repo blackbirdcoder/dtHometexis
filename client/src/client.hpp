@@ -14,7 +14,7 @@ public:
   void Run();
   void Close();
   void Send(const std::string &method, const std::vector<std::string> &params,
-            const std::string &tag, const id_measure &id);
+            const std::string &tag, const size_t &id);
   bool IsSensorsReady() const;
   bool IsError() const;
   const bool IsAllowUpdate() const;

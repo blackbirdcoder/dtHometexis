@@ -22,7 +22,7 @@ public:
   const std::map<Sensor *, int> &GetSensorsID() const;
   bool IsSensorDataAdded() const;
   void EnableSensorDataAdded();
-  const size_t &GetRequestID();
+  const size_t &CountRequestID();
 
 private:
   Mode currentMode;

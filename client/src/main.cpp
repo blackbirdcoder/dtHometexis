@@ -48,10 +48,10 @@ int main() {
   Model modelSensor = LoadModel("assets/models/sensor.glb");
   client.Send("GetDataSensors", {},
               ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR],
-              manager.GetRequestID());
+              manager.CountRequestID());
   client.Send("GetNameRooms", {},
               ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::ROOM],
-              manager.GetRequestID());
+              manager.CountRequestID());
 
   while (!WindowShouldClose()) {
     // --- Update ---
@@ -90,7 +90,7 @@ int main() {
           client.IsAllowUpdate()) {
         client.Send("UpdateDataSensors", {},
                     ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::UPDATE],
-                    manager.GetRequestID());
+                    manager.CountRequestID());
 
         if (!manager.IsSensorDataAdded()) {
           for (auto &sensor : sensors) {
@@ -131,10 +131,10 @@ int main() {
               nlohmann::to_string(nlohmann::json(sensor->GetNewOption()))};
           client.Send("SetSensorOptions", params,
                       ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SET],
-                      manager.GetRequestID());
+                      manager.CountRequestID());
           client.Send("UpdateDataSensors", {},
                       ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::UPDATE],
-                      manager.GetRequestID());
+                      manager.CountRequestID());
           sensor->ResetChangeFlagOption();
         }
 
@@ -144,10 +144,10 @@ int main() {
               nlohmann::to_string(nlohmann::json(sensor->GetNewValue()))};
           client.Send("SetSensorValue", params,
                       ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SET],
-                      manager.GetRequestID());
+                      manager.CountRequestID());
           client.Send("UpdateDataSensors", {},
                       ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::UPDATE],
-                      manager.GetRequestID());
+                      manager.CountRequestID());
           sensor->ResetChangeFlagValue();
         }
       }
