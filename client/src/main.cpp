@@ -47,9 +47,11 @@ int main() {
   GuiSetStyle(DEFAULT, TEXT_SIZE, ClientDigitalTwin::SIZE);
   Model modelSensor = LoadModel("assets/models/sensor.glb");
   client.Send("GetDataSensors", {},
-              ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR], 1);
+              ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR],
+              manager.GetRequestID());
   client.Send("GetNameRooms", {},
-              ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::ROOM], 2);
+              ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::ROOM],
+              manager.GetRequestID());
 
   while (!WindowShouldClose()) {
     // --- Update ---
@@ -87,7 +89,8 @@ int main() {
       if (manager.GetMode() == ClientDigitalTwin::Mode::CONTROL &&
           client.IsAllowUpdate()) {
         client.Send("UpdateDataSensors", {},
-                    ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::UPDATE], 3);
+                    ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::UPDATE],
+                    manager.GetRequestID());
 
         if (!manager.IsSensorDataAdded()) {
           for (auto &sensor : sensors) {
@@ -127,10 +130,11 @@ int main() {
               nlohmann::json(sensor->GetName()),
               nlohmann::to_string(nlohmann::json(sensor->GetNewOption()))};
           client.Send("SetSensorOptions", params,
-                      ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SET], 4);
+                      ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SET],
+                      manager.GetRequestID());
           client.Send("UpdateDataSensors", {},
                       ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::UPDATE],
-                      5);
+                      manager.GetRequestID());
           sensor->ResetChangeFlagOption();
         }
 
@@ -139,10 +143,11 @@ int main() {
               nlohmann::json(sensor->GetName()),
               nlohmann::to_string(nlohmann::json(sensor->GetNewValue()))};
           client.Send("SetSensorValue", params,
-                      ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SET], 6);
+                      ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SET],
+                      manager.GetRequestID());
           client.Send("UpdateDataSensors", {},
                       ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::UPDATE],
-                      7);
+                      manager.GetRequestID());
           sensor->ResetChangeFlagValue();
         }
       }

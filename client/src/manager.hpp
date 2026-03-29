@@ -22,6 +22,7 @@ public:
   const std::map<Sensor *, int> &GetSensorsID() const;
   bool IsSensorDataAdded() const;
   void EnableSensorDataAdded();
+  const size_t &GetRequestID();
 
 private:
   Mode currentMode;
@@ -40,5 +41,6 @@ private:
   };
   std::vector<Rooms> rooms;
   std::map<Sensor *, int> sensorsID;
+  size_t requestID;
 };
 } // namespace ClientDigitalTwin

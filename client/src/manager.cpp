@@ -8,6 +8,7 @@ ClientDigitalTwin::Manager::Manager() {
   this->isCreateTableDB = false;
   this->isCreateSensorDB = false;
   this->isSensorDataAdded = false;
+  this->requestID = 0;
 }
 
 void ClientDigitalTwin::Manager::SelectOperatingMode() {
@@ -88,4 +89,9 @@ bool ClientDigitalTwin::Manager::IsSensorDataAdded() const {
 
 void ClientDigitalTwin::Manager::EnableSensorDataAdded() {
   this->isSensorDataAdded = true;
+}
+
+const size_t &ClientDigitalTwin::Manager::GetRequestID() {
+  this->requestID++;
+  return this->requestID;
 }
