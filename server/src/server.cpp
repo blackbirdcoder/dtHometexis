@@ -246,19 +246,19 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                                              {"track", 1.0f},
                                              {"alarm", 0.0f},
                                          })}});
-    this->sensors.push_back({{"name", "kitchen_door_1"},
-                             {"type", "door"},
-                             {"unit", "bool"},
-                             {"value", 0.0f},
-                             {"position", nlohmann::json({
-                                              {"x", 5.0f},
-                                              {"y", posY},
-                                              {"z", 1.0f},
-                                          })},
-                             {"angle", 0.0f},
-                             {"options", nlohmann::json({
-                                             {"alarm", 0.0f},
-                                         })}});
+    // this->sensors.push_back({{"name", "kitchen_door_1"},
+    //                          {"type", "door"},
+    //                          {"unit", "bool"},
+    //                          {"value", 0.0f},
+    //                          {"position", nlohmann::json({
+    //                                           {"x", 5.0f},
+    //                                           {"y", posY},
+    //                                           {"z", 1.0f},
+    //                                       })},
+    //                          {"angle", 0.0f},
+    //                          {"options", nlohmann::json({
+    //                                          {"alarm", 0.0f},
+    //                                      })}});
     this->sensors.push_back({{"name", "kitchen_window_1"},
                              {"type", "window"},
                              {"unit", "bool"},
