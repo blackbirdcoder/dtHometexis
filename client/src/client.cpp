@@ -1,5 +1,4 @@
 #include "client.hpp"
-#include <nlohmann/json.hpp>
 #include <iostream>
 #include <memory>
 #include "sensors/temperature.hpp"
@@ -19,6 +18,7 @@ ClientDigitalTwin::Client::Client(const URL &url, const int ping) {
   this->isParseError = false;
   this->isAllowUpdate = true;
   this->isReadyNameRooms = false;
+  this->isWallsReady = false;
 }
 
 void ClientDigitalTwin::Client::Handler(
@@ -31,8 +31,17 @@ void ClientDigitalTwin::Client::Handler(
       try {
         nlohmann::json response = nlohmann::json::parse(msg->str);
         if (response["tag"] ==
-            ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::HOME]) {
-          std::cout << "(*CLIENT*) IT IS HOME" << '\n';
+            ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::HOME_WALL_SOLID]) {
+          this->walls = response["result"];
+          this->isWallsReady = true;
+
+        } else if (response["tag"] ==
+                   ClientDigitalTwin::TAGS
+                       [ClientDigitalTwin::Tag::HOME_OPENING]) {
+          std::cout << "(*CLIENT*) WINDOWS DOORS: " << response["result"]
+                    << '\n';
+          this->opening = response["result"];
+          this->isOpeningReady = true;              
 
         } else if (response["tag"] ==
                    ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR]) {
@@ -198,8 +207,7 @@ void ClientDigitalTwin::Client::Close() { webSocket.stop(); }
 
 void ClientDigitalTwin::Client::Send(const std::string &method,
                                      const std::vector<std::string> &params,
-                                     const std::string &tag,
-                                     const size_t &id) {
+                                     const std::string &tag, const size_t &id) {
   nlohmann::json request;
   request["jsonrpc"] = "2.0";
   request["method"] = method;
@@ -228,4 +236,20 @@ bool ClientDigitalTwin::Client::IsNameRoomsReady() const {
 
 std::vector<std::string> ClientDigitalTwin::Client::GetNameRooms() {
   return this->nameRooms;
+}
+
+bool ClientDigitalTwin::Client::IsWallsReady() const {
+  return this->isWallsReady;
+}
+
+std::vector<nlohmann::json> &ClientDigitalTwin::Client::GetWalls() {
+  return this->walls;
+}
+
+bool ClientDigitalTwin::Client::IsOpeningReady() const {
+  return this->isOpeningReady;
+}
+
+std::vector<nlohmann::json> &ClientDigitalTwin::Client::GetOpening() {
+  return this->opening;
 }

@@ -46,10 +46,10 @@ void ServerDigitalTwin::Server::Handler() {
                 request["method"] == "GetDataSensors") {
 
               nlohmann::json data;
-              data["sensors"] = generate("kitchen");
-              data["sensors"] = generate("bathroom");
-              data["sensors"] = generate("hall");
-              data["sensors"] = generate("bedroom");
+              data["sensors"] = generateSensors("kitchen");
+              data["sensors"] = generateSensors("bathroom");
+              data["sensors"] = generateSensors("hall");
+              data["sensors"] = generateSensors("bedroom");
 
               response["id"] = request["id"];
               response["tag"] = request["tag"];
@@ -87,8 +87,6 @@ void ServerDigitalTwin::Server::Handler() {
 
             } else if (request.contains("method") &&
                        request["method"] == "GetNameRooms") {
-              std::cout << "*(SERVER)* NAME ROOMS METHODS\n";
-
               nlohmann::json data;
               data = this->rooms;
               response["id"] = request["id"];
@@ -113,6 +111,23 @@ void ServerDigitalTwin::Server::Handler() {
                   }
                 }
               }
+            } else if (request.contains("method") &&
+                       request["method"] == "GetHomeWallSolid") {
+              response["id"] = request["id"];
+              response["tag"] = request["tag"];
+              response["result"] = generateWallSolid();
+              ws.sendText(nlohmann::to_string(response));
+
+            } else if (request.contains("method") &&
+                       request["method"] == "GetHomeWindowsDoorsOpening") {
+              std::cout << "*(SERVER)* GET WINDOW DOOR\n";
+
+              response["id"] = request["id"];
+              response["tag"] = request["tag"];
+              response["result"] = generateWindowDoor();
+
+              ws.sendText(nlohmann::to_string(response));
+
             } else if (request.contains("method")) {
               nlohmann::json error;
               error["code"] = -32601;
@@ -154,7 +169,8 @@ void ServerDigitalTwin::Server::Run() {
   webSocket.wait();
 }
 
-nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
+nlohmann::json
+ServerDigitalTwin::Server::generateSensors(const std::string &room) {
   float posY = 3.0f;
   if (room == "kitchen") {
     this->sensors.push_back({{"name", "kitchen_temp_1"},
@@ -246,19 +262,6 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                                              {"track", 1.0f},
                                              {"alarm", 0.0f},
                                          })}});
-    // this->sensors.push_back({{"name", "kitchen_door_1"},
-    //                          {"type", "door"},
-    //                          {"unit", "bool"},
-    //                          {"value", 0.0f},
-    //                          {"position", nlohmann::json({
-    //                                           {"x", 5.0f},
-    //                                           {"y", posY},
-    //                                           {"z", 1.0f},
-    //                                       })},
-    //                          {"angle", 0.0f},
-    //                          {"options", nlohmann::json({
-    //                                          {"alarm", 0.0f},
-    //                                      })}});
     this->sensors.push_back({{"name", "kitchen_window_1"},
                              {"type", "window"},
                              {"unit", "bool"},
@@ -474,6 +477,117 @@ nlohmann::json ServerDigitalTwin::Server::generate(const std::string &room) {
                                          })}});
   }
   return this->sensors;
+}
+
+nlohmann::json ServerDigitalTwin::Server::generateWallSolid() {
+  nlohmann::json data = {
+
+      // kitchen wall 1
+      {{"type", "wall"},
+       {"position", {-0.15, 2.0, -10.0}},
+       {"scale", {20.0, 4.0, 0.3}}},
+
+      // kitchen wall 2
+      {{"type", "wall"},
+       {"position", {10.0, 2.0, -7.76}},
+       {"scale", {0.3, 4.0, 4.8}}},
+
+      // kitchen wall 3 (mini)
+      {{"type", "wall"},
+       {"position", {10.0, 0.6, -4.06}},
+       {"scale", {0.3, 1.2, 2.6}}},
+
+      // kitchen wall 4
+      {{"type", "wall"},
+       {"position", {10.0, 2.0, 1.47}},
+       {"scale", {0.3, 4.0, 8.5}}},
+
+      // hall wall 1
+      {{"type", "wall"},
+       {"position", {10.0, 2.0, 8.78}},
+       {"scale", {0.3, 4.0, 2.65}}},
+
+      // hall wall 2
+      {{"type", "wall"},
+       {"position", {2.85, 2.0, 9.97}},
+       {"scale", {14.0, 4.0, 0.3}}},
+
+      // bedroom wall 3 (mini)
+      {{"type", "wall"},
+       {"position", {-5.4, 0.6, 9.99}},
+       {"scale", {2.51, 1.2, 0.3}}},
+
+      // bedroom wall 4
+      {{"type", "wall"},
+       {"position", {-8.37, 2.0, 9.97}},
+       {"scale", {3.55, 4.0, 0.3}}},
+
+      // bedroom wall 5
+      {{"type", "wall"},
+       {"position", {-10.0, 2.0, 0.0}},
+       {"scale", {0.3, 4.0, 19.66}}},
+
+      // bedroom wall 6
+      {{"type", "wall"},
+       {"position", {-1.19, 2.0, 5.05}},
+       {"scale", {0.3, 4.0, 9.55}}},
+
+      // bedroom wall 7
+      {{"type", "wall"},
+       {"position", {-1.79, 2.0, 0.131}},
+       {"scale", {1.5, 4.0, 0.3}}},
+
+      // bedroom wall 8
+      {{"type", "wall"},
+       {"position", {-7.1, 2.0, 0.131}},
+       {"scale", {5.54, 4.0, 0.3}}},
+
+      // bathroom wall 1
+      {{"type", "wall"},
+       {"position", {-4.78, 2.0, -7.76}},
+       {"scale", {0.3, 4.0, 4.18}}},
+
+      // bathroom wall 2
+      {{"type", "wall"},
+       {"position", {-4.78, 2.0, -1.95}},
+       {"scale", {0.3, 4.0, 3.88}}}
+
+  };
+
+  return data;
+}
+
+nlohmann::json ServerDigitalTwin::Server::generateWindowDoor() {
+  nlohmann::json data = {
+
+      // Windows
+      {{"type", "window"},
+       {"position", {10.0f, 1.2f, -4.03f}},
+       {"rotation", 270.0f},
+       {"scale", {4.0f, 3.0f, 3.0f}}},
+
+      {{"type", "window"},
+       {"position", {-5.4f, 1.2f, 9.99f}},
+       {"rotation", 180.0f},
+       {"scale", {4.0f, 3.0f, 3.0f}}},
+
+      // Doors
+      {{"type", "door"},
+       {"position", {10.20f, 0.0f, 7.46f}},
+       {"rotation", 0.0f},
+       {"scale", {2.0f, 1.9f, 2.0f}}},
+
+      {{"type", "door"},
+       {"position", {-2.551f, 0.0f, 0.0f}},
+       {"rotation", 90.0f},
+       {"scale", {2.0f, 1.9f, 2.0f}}},
+
+      {{"type", "door"},
+       {"position", {-4.60f, 0.0f, -3.89f}},
+       {"rotation", 0.0f},
+       {"scale", {2.0f, 1.9f, 2.0f}}}};
+       
+  return data;
 }
 
 float ServerDigitalTwin::Server::randomValue(float min, float max) {

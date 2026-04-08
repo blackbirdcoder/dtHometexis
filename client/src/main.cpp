@@ -15,9 +15,6 @@
 #include "storage.hpp"
 
 int main() {
-  float px = -4.60f;
-  float py = 3.88f;
-  float pz = -1.95f;
   INIReader reader(ClientDigitalTwin::CONFIG_FILE);
   if (reader.ParseError() < 0) {
     std::cout << "[!] Error: Can't load"
@@ -58,6 +55,12 @@ int main() {
               manager.CountRequestID());
   client.Send("GetNameRooms", {},
               ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::ROOM],
+              manager.CountRequestID());
+  client.Send("GetHomeWallSolid", {},
+              ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::HOME_WALL_SOLID],
+              manager.CountRequestID());
+  client.Send("GetHomeWindowsDoorsOpening", {},
+              ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::HOME_OPENING],
               manager.CountRequestID());
 
   while (!WindowShouldClose()) {
@@ -171,83 +174,41 @@ int main() {
         sensor->Draw(modelSensor);
       }
     }
-    //====
-    // kitchen wall 1
-    DrawCube((Vector3){-0.15, 2.0f, -10.0f}, 20.0f, 4.0f, 0.3f, GRAY);
-    DrawCubeWires((Vector3){-0.15, 2.0f, -10.0f}, 20.0f, 4.0f, 0.3f, YELLOW);
-    // kitchen wall 2
-    DrawCube((Vector3){10.0f, 2.0f, -7.76}, 0.3f, 4.0f, 4.8f, GRAY);
-    DrawCubeWires((Vector3){10.0f, 2.0f, -7.76}, 0.3f, 4.0f, 4.8f, YELLOW);
-    //  kitchen window
-    DrawModelEx(modelWindowClose, (Vector3){10.0f, 1.2f, -4.03},
-                (Vector3){0.0f, 1.0f, 0.0f}, 270.0f,
-                (Vector3){4.0f, 3.0f, 3.0f}, WHITE);
-    // kitchen wall 3 (mini)
-    DrawCube((Vector3){10.0f, 0.6f, -4.06f}, 0.3f, 1.2f, 2.6f, GRAY);
-    DrawCubeWires((Vector3){10.0f, 0.6f, -4.06f}, 0.3f, 1.2f, 2.6f, YELLOW);
-    // kitchen wall 4
-    DrawCube((Vector3){10.0f, 2.0f, 1.47f}, 0.3f, 4.0f, 8.5f, GRAY);
-    DrawCubeWires((Vector3){10.0f, 2.0f, 1.47f}, 0.3f, 4.0f, 8.5f, YELLOW);
-    // hall door
-    DrawModelEx(modelDoorClose, (Vector3){10.20f, 0.0f, 7.46f},
-                (Vector3){0.0f, 1.0f, 0.0f}, 0.0f, (Vector3){2.0f, 1.9f, 2.0f},
-                WHITE);
-    // hall wall 1
-    DrawCube((Vector3){10.0f, 2.0f, 8.78f}, 0.3f, 4.0f, 2.65f, GRAY);
-    DrawCubeWires((Vector3){10.0f, 2.0f, 8.78f}, 0.3f, 4.0f, 2.65f, YELLOW);
-    // hall wall 2
-    DrawCube((Vector3){2.85, 2.0f, 9.97f}, 14.0f, 4.0f, 0.3f, GRAY);
-    DrawCubeWires((Vector3){2.85, 2.0f, 9.97f}, 14.0f, 4.0f, 0.3f, YELLOW);
-    // bedroom window
-    DrawModelEx(modelWindowClose, (Vector3){-5.4f, 1.2f, 9.99},
-                (Vector3){0.0f, 1.0f, 0.0f}, 180.0f,
-                (Vector3){4.0f, 3.0f, 3.0f}, WHITE);
-    // bedroom wall 3 (mini)
-    DrawCube((Vector3){-5.4f, 0.6f, 9.99f}, 2.51f, 1.2f, 0.3f, GRAY);
-    DrawCubeWires((Vector3){-5.4f, 0.6f, 9.99f}, 2.51f, 1.2f, 0.3f, YELLOW);
-    // bedroom wall 4
-    DrawCube((Vector3){-8.37f, 2.0f, 9.97f}, 3.55f, 4.0f, 0.3f, GRAY);
-    DrawCubeWires((Vector3){-8.37f, 2.0f, 9.97f}, 3.55f, 4.0f, 0.3f, YELLOW);
-    // bedroom wall 5
-    DrawCube((Vector3){-10.0f, 2.0f, 0.0}, 0.3f, 4.0f, 19.66, GRAY);
-    DrawCubeWires((Vector3){-10.0f, 2.0f, 0.0}, 0.3f, 4.0f, 19.66, YELLOW);
-    // bedroom wall 6
-    DrawCube((Vector3){-1.19f, 2.0f, 5.05f}, 0.3f, 4.0f, 9.55f, GRAY);
-    DrawCubeWires((Vector3){-1.19f, 2.0f, 5.05f}, 0.3f, 4.0f, 9.55f, YELLOW);
-    // bedroom wall 7
-    DrawCube((Vector3){-1.79f, 2.0f, 0.131f}, 1.5f, 4.0f, 0.3f, GRAY);
-    DrawCubeWires((Vector3){-1.79f, 2.0f, 0.131f}, 1.5f, 4.0f, 0.3f, YELLOW);
-    // bedroom door
-    DrawModelEx(modelDoorClose, (Vector3){-2.551f, 0.0f, 0.0f},
-                (Vector3){0.0f, 1.0f, 0.0f}, 90.0f, (Vector3){2.0f, 1.9f, 2.0f},
-                WHITE);
-    // bedroom wall 8
-    DrawCube((Vector3){-7.1f, 2.0f, 0.131f}, 5.54f, 4.0f, 0.3f, GRAY);
-    DrawCubeWires((Vector3){-7.1f, 2.0f, 0.131f}, 5.54f, 4.0f, 0.3f, YELLOW);
-    // bathroom wall 1
-    DrawCube((Vector3){-4.78, 2.0f, -7.76}, 0.3f, 4.0f, 4.18f, GRAY);
-    DrawCubeWires((Vector3){-4.78, 2.0f, -7.76}, 0.3f, 4.0f, 4.18f, YELLOW);
-    // bathroom door
-    DrawModelEx(modelDoorClose, (Vector3){-4.60, 0.0f, -3.89f},
-                (Vector3){0.0f, 1.0f, 0.0f}, 0.0f, (Vector3){2.0f, 1.9f, 2.0f},
-                WHITE);DrawCube((Vector3){-4.78, 2.0f, -1.95}, 0.3f, 4.0f, 3.88f, GRAY);
-    // bathroom wall 2
-    DrawCube((Vector3){-4.78, 2.0f, -1.95}, 0.3f, 4.0f, 3.88f, GRAY);
-    DrawCubeWires((Vector3){-4.78, 2.0f, -1.95}, 0.3f, 4.0f, 3.88f, YELLOW);
-    //====
+
+    if (client.IsWallsReady()) {
+      for (const auto &obj : client.GetWalls()) {
+        auto position = obj["position"];
+        auto scale = obj["scale"];
+        Vector3 positions = {position[0], position[1], position[2]};
+        Vector3 size = {scale[0], scale[1], scale[2]};
+        DrawCube(positions, size.x, size.y, size.z, GRAY);
+        DrawCubeWires(positions, size.x, size.y, size.z, YELLOW);
+      }
+    }
+
+    if (client.IsOpeningReady()) {
+      for (const auto &obj : client.GetOpening()) {
+        std::string type = obj["type"];
+        Vector3 position = {obj["position"][0], obj["position"][1],
+                            obj["position"][2]};
+        Vector3 scale = {obj["scale"][0], obj["scale"][1], obj["scale"][2]};
+        float rotation = obj.value("rotation", 0.0f);
+
+        if (type == "window") {
+          DrawModelEx(modelWindowClose, position, (Vector3){0.0f, 1.0f, 0.0f},
+                      rotation, scale, WHITE);
+        } else if (type == "door") {
+          DrawModelEx(modelDoorClose, position, (Vector3){0.0f, 1.0f, 0.0f},
+                      rotation, scale, WHITE);
+        }
+      }
+    }
+
     DrawGrid(20, 1.0f);
     EndMode3D();
     //----------------
 
     //--- GUI ---
-    //====
-    GuiSlider(Rectangle{100.0f, 360.0f, 150.0, 20.0f}, "X",
-              TextFormat("%2.2f", px), &px, -20.0f, 20.0f);
-    GuiSlider(Rectangle{100.0f, 390.0f, 150.0, 20.0f}, "Y",
-              TextFormat("%2.2f", py), &py, -20.0f, 20.0f);
-    GuiSlider(Rectangle{100.0f, 420.0f, 150.0, 20.0f}, "Z",
-              TextFormat("%2.2f", pz), &pz, -20.0f, 20.0f);
-    //====
     manager.SelectOperatingMode();
     manager.DrawTextMode();
     if (client.IsSensorsReady()) {

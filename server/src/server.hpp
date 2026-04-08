@@ -11,7 +11,9 @@ public:
   void Run();
 
 private:
-  nlohmann::json generate(const std::string &room);
+  nlohmann::json generateSensors(const std::string &room);
+  nlohmann::json generateWallSolid();
+  nlohmann::json generateWindowDoor();
   float randomValue(float min, float max);
   ix::WebSocketServer webSocket;
   nlohmann::json sensors;

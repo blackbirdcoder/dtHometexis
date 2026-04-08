@@ -4,6 +4,7 @@
 #include "settings.hpp"
 #include "sensors/sensor.hpp"
 #include <vector>
+#include <nlohmann/json.hpp>
 
 namespace ClientDigitalTwin {
 class Client {
@@ -21,6 +22,10 @@ public:
   void SetAllowUpdate(bool value);
   bool IsNameRoomsReady() const;
   std::vector<std::string> GetNameRooms();
+  bool IsWallsReady() const;
+  std::vector<nlohmann::json>& GetWalls();
+  bool IsOpeningReady() const;
+  std::vector<nlohmann::json>& GetOpening();
 
 private:
   ix::WebSocket webSocket;
@@ -30,6 +35,10 @@ private:
   bool isAllowUpdate;
   bool isReadyNameRooms;
   std::vector<std::string> nameRooms;
+  bool isWallsReady;
+  std::vector<nlohmann::json> walls;
+  bool isOpeningReady;
+  std::vector<nlohmann::json> opening;
 };
 
 } // namespace ClientDigitalTwin
