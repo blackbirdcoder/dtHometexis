@@ -40,6 +40,7 @@ int main() {
   //----------------
 
   // --- Window App ---
+  SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
   InitWindow(1024, 768, "Digital Twin Hometexis");
   SetTargetFPS(60);
   ClientDigitalTwin::Camera camera3d;
@@ -193,13 +194,39 @@ int main() {
                             obj["position"][2]};
         Vector3 scale = {obj["scale"][0], obj["scale"][1], obj["scale"][2]};
         float rotation = obj.value("rotation", 0.0f);
+        std::string roomName = obj["room"];
 
         if (type == "window") {
-          DrawModelEx(modelWindowClose, position, (Vector3){0.0f, 1.0f, 0.0f},
-                      rotation, scale, WHITE);
+
+          for (auto &sensor : sensors) {
+
+            if (sensor->GetName() == roomName) {
+              if (!sensor->GetValue()) {
+                DrawModelEx(modelWindowClose, position,
+                            (Vector3){0.0f, 1.0f, 0.0f}, rotation, scale,
+                            WHITE);
+              } else {
+                DrawModelEx(modelWindowOpen, position,
+                            (Vector3){0.0f, 1.0f, 0.0f}, rotation, scale,
+                            WHITE);
+              }
+            }
+          }
+
         } else if (type == "door") {
-          DrawModelEx(modelDoorClose, position, (Vector3){0.0f, 1.0f, 0.0f},
-                      rotation, scale, WHITE);
+          for (auto &sensor : sensors) {
+            if (sensor->GetName() == roomName) {
+              if (!sensor->GetValue()) {
+                DrawModelEx(modelDoorClose, position,
+                            (Vector3){0.0f, 1.0f, 0.0f}, rotation, scale,
+                            WHITE);
+              } else {
+                DrawModelEx(modelDoorOpen, position,
+                            (Vector3){0.0f, 1.0f, 0.0f}, rotation, scale,
+                            WHITE);
+              }
+            }
+          }
         }
       }
     }
