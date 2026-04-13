@@ -30,6 +30,8 @@ public:
   const float GetValue() const;
   const std::string &GetType() const;
   std::string GetWhichRoom();
+  bool IsOpenThisDoor() const;
+  bool IsOpenThisWindow() const;
 
 protected:
   Mode mode;
@@ -60,6 +62,8 @@ protected:
   Option sendOption;
   Option sendValue;
   bool isChangeValue;
+  bool isOpenThisDoor;
+  bool isOpenThisWindow;
   void drawIndication() const;
   void virtual parsingOption();
   void virtual makeOption();

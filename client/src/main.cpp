@@ -201,7 +201,7 @@ int main() {
           for (auto &sensor : sensors) {
 
             if (sensor->GetName() == roomName) {
-              if (!sensor->GetValue()) {
+              if (!sensor->IsOpenThisWindow()) {
                 DrawModelEx(modelWindowClose, position,
                             (Vector3){0.0f, 1.0f, 0.0f}, rotation, scale,
                             WHITE);
@@ -216,7 +216,7 @@ int main() {
         } else if (type == "door") {
           for (auto &sensor : sensors) {
             if (sensor->GetName() == roomName) {
-              if (!sensor->GetValue()) {
+              if (!sensor->IsOpenThisDoor()) {
                 DrawModelEx(modelDoorClose, position,
                             (Vector3){0.0f, 1.0f, 0.0f}, rotation, scale,
                             WHITE);

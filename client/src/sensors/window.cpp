@@ -6,8 +6,8 @@ ClientDigitalTwin::Window::Window(std::string name, std::string type,
                                   ClientDigitalTwin::Option options,
                                   ClientDigitalTwin::Mode mode)
     : Sensor(name, type, unit, value, position, angle, options, mode) {
-  this->isOpen = value;
-  this->oldStateOpen = this->isOpen;
+  this->isOpenThisWindow = value;
+  this->oldStateOpen = this->isOpenThisWindow;
   this->parsingOption();
 }
 
@@ -15,13 +15,13 @@ void ClientDigitalTwin::Window::ShowWindow(const Camera3D &camera) {
   Sensor::ShowWindow(camera);
 
   if (this->mode != this->oldMode) {
-    this->isOpen = static_cast<bool>(value);
+    this->isOpenThisWindow = static_cast<bool>(value);
     this->parsingOption();
     this->oldMode = this->mode;
   }
 
   // Current value notifications
-  std::string openText = this->type + ": " + (this->isOpen ? "open" : "close");
+  std::string openText = this->type + ": " + (this->isOpenThisWindow ? "open" : "close");
   GuiLabel(
       {this->windowRect.x + 5.0f, this->windowRect.y + 25.0f, 200.0f, 20.0f},
       openText.c_str());
@@ -31,7 +31,7 @@ void ClientDigitalTwin::Window::ShowWindow(const Camera3D &camera) {
   GuiCheckBox(
       {this->windowRect.x + 7.0f, this->windowRect.y + 55.0f, 15.0f, 15.0f},
       "Turn alarm", &this->isAlarm);
-  if (this->isAlarm && this->isOpen) {
+  if (this->isAlarm && this->isOpenThisWindow) {
     this->indicateColor = RED;
   } else {
     this->indicateColor = GREEN;
@@ -47,20 +47,20 @@ void ClientDigitalTwin::Window::ShowWindow(const Camera3D &camera) {
   //-----
 
   // Toggle window
-  std::string btnText = this->isOpen ? "Close" : "Open";
+  std::string btnText = this->isOpenThisWindow ? "Close" : "Open";
   if (GuiButton({this->windowRect.x + 143.0f, this->windowRect.y + 102.0f,
                  100.0f, 30.0f},
                 btnText.c_str())) {
-    this->isOpen = !isOpen;
+    this->isOpenThisWindow = !isOpenThisWindow;
   }
-  if (this->isOpen != this->oldStateOpen && isControl) {
+  if (this->isOpenThisWindow != this->oldStateOpen && isControl) {
     this->makeValue();
     this->isChangeValue = true;
   } else {
     //...
   }
 
-  this->oldStateOpen = this->isOpen;
+  this->oldStateOpen = this->isOpenThisWindow;
   //-----
 }
 
@@ -79,5 +79,5 @@ void ClientDigitalTwin::Window::makeOption() {
 }
 
 void ClientDigitalTwin::Window::makeValue() {
-  this->sendValue["value"] = static_cast<float>(this->isOpen);
+  this->sendValue["value"] = static_cast<float>(this->isOpenThisWindow);
 }

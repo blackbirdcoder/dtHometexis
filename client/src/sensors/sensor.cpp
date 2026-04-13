@@ -29,6 +29,8 @@ ClientDigitalTwin::Sensor::Sensor(std::string name, std::string type,
   this->type[0] = std::toupper(this->type[0]);
   this->isChangeOption = false;
   this->isChangeValue = false;
+  this->isOpenThisDoor = false;
+  this->isOpenThisWindow = false;
 }
 
 void ClientDigitalTwin::Sensor::ClickHandler(const Camera &camera,
@@ -227,4 +229,12 @@ std::string ClientDigitalTwin::Sensor::GetWhichRoom() {
   tmp[0][0] = std::toupper(tmp[0][0]);
 
   return tmp[0];
+}
+
+bool ClientDigitalTwin::Sensor::IsOpenThisDoor() const {
+  return this->isOpenThisDoor;
+}
+
+bool ClientDigitalTwin::Sensor::IsOpenThisWindow() const {
+  return this->isOpenThisWindow;
 }

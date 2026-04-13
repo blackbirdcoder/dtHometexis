@@ -9,7 +9,6 @@ public:
   void ShowWindow(const Camera3D &camera) override;
 
 private:
-  bool isOpen;
   bool oldStateOpen;
   bool isAlarm;
   bool oldStateAlarm;
