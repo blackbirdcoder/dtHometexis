@@ -51,6 +51,9 @@ int main() {
   Model modelWindowClose = LoadModel("assets/models/windowClose.glb");
   Model modelDoorClose = LoadModel("assets/models/doorClose.glb");
   Model modelDoorOpen = LoadModel("assets/models/doorOpen.glb");
+  Model modelTable = LoadModel("assets/models/table.glb");
+  Model modelBed = LoadModel("assets/models/bed.glb");
+  Model modelBath = LoadModel("assets/models/bath.glb");
   client.Send("GetDataSensors", {},
               ClientDigitalTwin::TAGS[ClientDigitalTwin::Tag::SENSOR],
               manager.CountRequestID());
@@ -197,9 +200,7 @@ int main() {
         std::string roomName = obj["room"];
 
         if (type == "window") {
-
           for (auto &sensor : sensors) {
-
             if (sensor->GetName() == roomName) {
               if (!sensor->IsOpenThisWindow()) {
                 DrawModelEx(modelWindowClose, position,
@@ -230,7 +231,11 @@ int main() {
         }
       }
     }
-
+    DrawModel(modelTable, (Vector3){4.0f, 2.0f, -5.0f}, 2.0f, WHITE);
+    DrawModelEx(modelBed, (Vector3){-8.5f, 0.0f, 6.0f},
+                (Vector3){0.0f, 1.0f, 0.0f}, 90.0f, (Vector3){1.5f, 1.5f, 1.5f},
+                WHITE);
+    DrawModel(modelBath, (Vector3){-8.0f, 0.0f, -6.0f}, 0.3f, WHITE);
     DrawGrid(20, 1.0f);
     EndMode3D();
     //----------------
@@ -259,6 +264,9 @@ int main() {
   UnloadModel(modelWindowClose);
   UnloadModel(modelDoorClose);
   UnloadModel(modelDoorOpen);
+  UnloadModel(modelTable);
+  UnloadModel(modelBed);
+  UnloadModel(modelBath);
   client.Close();
   CloseWindow();
   //----------------
